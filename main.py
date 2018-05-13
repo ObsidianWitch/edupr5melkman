@@ -1,6 +1,6 @@
 import sys
 import retro
-from hull import Hull
+from melkman import Melkman
 
 window = retro.Window(
     title     = "Melkman",
@@ -9,7 +9,7 @@ window = retro.Window(
 )
 events = retro.Events()
 
-hull = Hull()
+melkman = Melkman()
 
 while 1:
     # Update
@@ -17,10 +17,10 @@ while 1:
     if events.event(retro.QUIT): sys.exit()
 
     if events.mouse_press(retro.M_LEFT):
-        hull.add(events.mouse_pos())
+        melkman.add(events.mouse_pos())
 
     # Draw
     window.fill(retro.WHITE)
-    hull.draw(window)
+    melkman.draw(window)
 
     window.update()

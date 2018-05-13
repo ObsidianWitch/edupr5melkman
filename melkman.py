@@ -1,9 +1,11 @@
+import collections
 import retro
 from vector import V2
 
-class Hull:
+class Melkman:
     def __init__(self):
         self.lst = []
+        self.hull = collections.deque()
 
     def add(self, v):
         self.lst.append(V2(v))
