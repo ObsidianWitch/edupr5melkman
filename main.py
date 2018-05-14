@@ -5,7 +5,7 @@ from melkman import Melkman
 window = retro.Window(
     title     = "Melkman",
     size      = (800, 600),
-    framerate = 60,
+    framerate = 20,
 )
 events = retro.Events()
 
