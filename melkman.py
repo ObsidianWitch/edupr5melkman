@@ -24,6 +24,7 @@ class Melkman:
     # decide whether to add this point to `self.hull` or not.
     def add(self, p):
         v = V2(p, index = len(self.lst))
+        if not SimplePolygonalChain.verify(self.lst, v): return
 
         # Initialize counter-clockwise hull
         if len(self.lst) < 2:
@@ -37,17 +38,17 @@ class Melkman:
                 self.hull.append(self.lst[-1])
                 self.hull.extend(self.lst)
         # Update hull
-        elif SimplePolygonalChain.verify(self.lst, v):
+        else:
             self.lst.append(v)
             self.step(v)
 
     def step(self, v):
         def cw_start(): return V2.rotation(
             self.hull[0], self.hull[1], v
-        ) >= 0
+        ) > 0
         def cw_end(): return V2.rotation(
             self.hull[-2], self.hull[-1], v
-        ) >= 0
+        ) > 0
 
         if cw_start() and cw_end(): return
         while not cw_start(): self.hull.popleft()
