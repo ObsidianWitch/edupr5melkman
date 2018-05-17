@@ -26,7 +26,7 @@ class Melkman:
         v = V2(p, index = len(self.lst))
         if not SimplePolygonalChain.verify(self.lst, v): return
 
-        # Initialize counter-clockwise hull
+        # Initialize clockwise hull
         if len(self.lst) < 2:
             self.lst.append(v)
         elif len(self.lst) == 2:
