@@ -23,11 +23,17 @@ class V2:
         self.y - v.y,
     )
 
-    # Result < 0 if `c` (point) is on the right of `ab` (direction vector).
-    # Result = 0 if `a`, `b` and `c` are collinear.
-    # Result > 0 if `c` is on the left of `ab`.
     @classmethod
-    def position(cls, a, b, c): return cls.cross(b - a, c - a)
+    def sign(cls, a): return 1 if a > 0 \
+                      else -1 if a < 0 \
+                      else 0
+
+    # Given a left-handed 2D coordinate system:
+    # Returns -1 if `c` (point) is on the left of `ab` (direction vector).
+    # Returns  0 if `a`, `b` and `c` are collinear.
+    # Returns  1 if `c` is on the right of `ab`.
+    @classmethod
+    def position(cls, a, b, c): return cls.sign(cls.cross(b - a, c - a))
 
     @classmethod
     def dot(cls, va, vb): return (va.x * vb.x) + (va.y * vb.y)

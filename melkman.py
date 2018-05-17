@@ -24,15 +24,17 @@ class Melkman:
     # decide whether to add this point to `self.hull` or not.
     def add(self, p):
         v = V2(p, index = len(self.lst))
+
         # Initialize counter-clockwise hull
         if len(self.lst) < 2:
             self.lst.append(v)
         elif len(self.lst) == 2:
             self.lst.append(v)
-            if V2.position(*self.lst) < 0: # clockwise -> 3213
+            rotation = V2.position(*self.lst)
+            if rotation < 0: # counter-clockwise -> 3213
                 self.hull.extend(self.lst[::-1])
                 self.hull.append(self.lst[-1])
-            else: # counter-clockwise or colinear -> 3123
+            else: # clockwise or colinear -> 3123
                 self.hull.append(self.lst[-1])
                 self.hull.extend(self.lst)
         # Update hull
@@ -41,16 +43,16 @@ class Melkman:
             self.step(v)
 
     def step(self, v):
-        def left_start(): return V2.position(
+        def right_start(): return V2.position(
             self.hull[0], self.hull[1], v
         ) >= 0
-        def left_end(): return V2.position(
+        def right_end(): return V2.position(
             self.hull[-2], self.hull[-1], v
         ) >= 0
 
-        if left_start() and left_end(): return
-        while not left_start(): self.hull.popleft()
-        while not left_end(): self.hull.pop()
+        if right_start() and right_end(): return
+        while not right_start(): self.hull.popleft()
+        while not right_end(): self.hull.pop()
 
         self.hull.appendleft(v)
         self.hull.append(v)
