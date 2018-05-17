@@ -2,18 +2,22 @@ import collections
 import retro
 from vector import V2
 
+class SimplePolygonalChain:
+    # Generates a simple polygonal chain.
+    @classmethod
+    def generate(cls): pass
+
+    # Given `lst`, a simple polygonal chain, verify if the property is still
+    # true for `lst U {v}`.
+    @classmethod
+    def verify(cls, lst, v):
+        # TODO add V2.intersection classmethod
+        return True
+
 class Melkman:
     def __init__(self):
         self.lst = []
         self.hull = collections.deque()
-
-    # Returns whether the points in `self.lst` form a simple polygonal chain.
-    # If `v` is specified, the function assumes `self.lst` is already a
-    # simple polygonal chain and verifies if the property is still true for
-    # {`p`} U `self.lst`.
-    def simple_polygonal_chain(self, v = None):
-        # TODO add V2.intersection classmethod
-        return True
 
     # Adds a new point `p` to `self.lst` if {`p`} U `self.lst` satisfies the
     # simple polygonal chain property. Then, apply the Melkman algorithm to
@@ -32,7 +36,7 @@ class Melkman:
                 self.hull.append(self.lst[-1])
                 self.hull.extend(self.lst)
         # Update hull
-        elif self.simple_polygonal_chain(v):
+        elif SimplePolygonalChain.verify(self.lst, v):
             self.lst.append(v)
             self.step(v)
 
@@ -91,3 +95,7 @@ class Melkman:
         self.draw_lines(self.lst, image, retro.BLACK)
         self.draw_points(self.hull, image, False)
         self.draw_lines(self.hull, image, retro.RED)
+
+    def __repr__(self): return " ".join(
+        str(v.index) for v in self.hull
+    )

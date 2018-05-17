@@ -19,6 +19,9 @@ while 1:
     if events.mouse_press(retro.M_LEFT):
         melkman.add(events.mouse_pos())
 
+    if events.key_press(retro.K_SPACE):
+        print(melkman)
+
     # Draw
     window.fill(retro.WHITE)
     melkman.draw(window)
