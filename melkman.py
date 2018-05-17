@@ -30,8 +30,7 @@ class Melkman:
             self.lst.append(v)
         elif len(self.lst) == 2:
             self.lst.append(v)
-            rotation = V2.position(*self.lst)
-            if rotation < 0: # counter-clockwise -> 3213
+            if V2.rotation(*self.lst) < 0: # counter-clockwise -> 3213
                 self.hull.extend(self.lst[::-1])
                 self.hull.append(self.lst[-1])
             else: # clockwise or colinear -> 3123
@@ -43,16 +42,16 @@ class Melkman:
             self.step(v)
 
     def step(self, v):
-        def right_start(): return V2.position(
+        def cw_start(): return V2.rotation(
             self.hull[0], self.hull[1], v
         ) >= 0
-        def right_end(): return V2.position(
+        def cw_end(): return V2.rotation(
             self.hull[-2], self.hull[-1], v
         ) >= 0
 
-        if right_start() and right_end(): return
-        while not right_start(): self.hull.popleft()
-        while not right_end(): self.hull.pop()
+        if cw_start() and cw_end(): return
+        while not cw_start(): self.hull.popleft()
+        while not cw_end(): self.hull.pop()
 
         self.hull.appendleft(v)
         self.hull.append(v)
