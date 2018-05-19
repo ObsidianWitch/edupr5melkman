@@ -23,6 +23,8 @@ class V2:
         self.y - v.y,
     )
 
+    def __eq__(self, v): return (self.x == v.x) and (self.y == v.y)
+
     @classmethod
     def sign(cls, a): return 1 if a > 0 \
                         else -1 if a < 0 \
@@ -51,6 +53,26 @@ class V2:
 
     @classmethod
     def cross(cls, va, vb): return (va.x * vb.y) - (va.y * vb.x)
+
+    @classmethod
+    def intersection(cls, a, b, c, d):
+        ca = a - c ; ab = b - a ; cd = d - c
+
+        denominator = cls.cross(cd, ab)
+        if b == c: return (denominator == 0) \
+                      and (cls.position(a, b, d) <= 0)
+
+        if denominator == 0:
+            colinear = (cls.cross(ca, cd) == 0)
+            overlap = (cls.position(a, b, c) == 0) \
+            or (cls.position(a, b, d) == 0) \
+            or (cls.position(c, d, a) == 0) \
+            or (cls.position(c, d, b) == 0)
+            return colinear and overlap
+
+        u = cls.cross(ca, cd) / denominator
+        v = cls.cross(ca, ab) / denominator
+        return (0 <= u <= 1) and (0 <= v <= 1)
 
     def __iter__(self):
         yield self.x
