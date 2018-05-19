@@ -37,10 +37,10 @@ class Melkman:
         if len(self.hull) == 0:
             self.lst.append(p)
             if len(self.lst) < 3: return
-            self.rotation = V2.rotation(*self.lst)
-            # TODO check collinearity
-            self.hull.append(self.lst[-1])
-            self.hull.extend(self.lst)
+            hull = (self.lst[-1], self.lst[0], self.lst[-2], self.lst[-1])
+            self.rotation = V2.rotation(*hull[1:])
+            if self.rotation == 0: return # collinear
+            self.hull.extend(hull)
         # Update hull
         else:
             self.lst.append(p)
