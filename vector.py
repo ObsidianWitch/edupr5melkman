@@ -78,4 +78,9 @@ class V2:
         yield self.x
         yield self.y
 
+    def __getitem__(self, key):
+        if   key == 0: return self.x
+        elif key == 1: return self.y
+        else: raise IndexError()
+
     def __repr__(self): return f"<V2({self.x}, {self.y})>"
