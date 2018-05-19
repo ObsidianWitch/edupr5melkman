@@ -33,33 +33,30 @@ class Melkman:
         p = V2(p, index = len(self.lst))
         if not SimplePolygonalChain.verify(self.lst, p): return
 
-        # Initialize clockwise hull
-        if len(self.lst) < 2:
+        # Initialize hull
+        if len(self.hull) == 0:
             self.lst.append(p)
-        elif len(self.lst) == 2:
-            self.lst.append(p)
-            if V2.rotation(*self.lst) < 0: # counter-clockwise -> 3213
-                self.hull.extend(self.lst[::-1])
-                self.hull.append(self.lst[-1])
-            else: # clockwise or colinear -> 3123
-                self.hull.append(self.lst[-1])
-                self.hull.extend(self.lst)
+            if len(self.lst) < 3: return
+            self.rotation = V2.rotation(*self.lst)
+            # TODO check collinearity
+            self.hull.append(self.lst[-1])
+            self.hull.extend(self.lst)
         # Update hull
         else:
             self.lst.append(p)
             self.step(p)
 
     def step(self, p):
-        def cw_start(): return V2.rotation(
+        def rotstart(): return V2.rotation(
             self.hull[0], self.hull[1], p
-        ) > 0
-        def cw_end(): return V2.rotation(
+        ) == self.rotation
+        def rotend(): return V2.rotation(
             self.hull[-2], self.hull[-1], p
-        ) > 0
+        ) == self.rotation
 
-        if cw_start() and cw_end(): return
-        while not cw_start(): self.hull.popleft()
-        while not cw_end(): self.hull.pop()
+        if rotstart() and rotend(): return
+        while not rotstart(): self.hull.popleft()
+        while not rotend(): self.hull.pop()
 
         self.hull.appendleft(p)
         self.hull.append(p)

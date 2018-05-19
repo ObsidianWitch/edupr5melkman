@@ -57,8 +57,8 @@ class V2:
     @classmethod
     def intersection(cls, a, b, c, d):
         ca = a - c ; ab = b - a ; cd = d - c
-
         denominator = cls.cross(cd, ab)
+
         if b == c: return (denominator == 0) \
                       and (cls.position(a, b, d) <= 0)
 
