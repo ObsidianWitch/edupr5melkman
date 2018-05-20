@@ -61,47 +61,6 @@ class Melkman:
         self.hull.appendleft(p)
         self.hull.append(p)
 
-    def draw_points(self, collection, image, simple):
-        for p in collection:
-            if not simple: image.draw_circle(
-                color  = retro.WHITE,
-                center = tuple(p),
-                radius = 10,
-                width  = 0,
-            )
-            image.draw_circle(
-                color  = retro.BLACK if simple else retro.RED,
-                center = tuple(p),
-                radius = 2 if simple else 10,
-                width  = 0 if simple else 1,
-            )
-            if not simple:
-                txt = retro.Sprite(retro.Font(18).render(
-                    text      = str(p.index),
-                    color     = retro.RED,
-                    antialias = True,
-                ))
-                txt.rect.center = tuple(p)
-                txt.draw(image)
-
-    def draw_lines(self, collection, image, color):
-        for i, _ in enumerate(collection):
-            if i == len(collection) - 1: return
-            p1 = collection[i]
-            p2 = collection[i + 1]
-            image.draw_line(
-                color     = color,
-                start_pos = tuple(p1),
-                end_pos   = tuple(p2),
-                width     = 1,
-            )
-
-    def draw(self, image):
-        self.draw_points(self.lst, image, True)
-        self.draw_lines(self.lst, image, retro.BLACK)
-        self.draw_points(self.hull, image, False)
-        self.draw_lines(self.hull, image, retro.RED)
-
     def __repr__(self): return " ".join(
         str(p.index) for p in self.hull
     )

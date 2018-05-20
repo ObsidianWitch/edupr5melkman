@@ -1,13 +1,6 @@
 import retro
 from vector import V2
 
-class Canvas(retro.Sprite):
-    def __init__(self, pos, size):
-        retro.Sprite.__init__(self, retro.Image(size))
-
-    def clear(self):
-        self.image.fill(retro.WHITE)
-
 class Cursor:
     def __init__(self, events):
         self.events = events
@@ -39,6 +32,64 @@ class Cursor:
             offset = 800
         )
         cross(color = retro.BLACK, center = self.position, offset = 5)
+
+class Graphs:
+    def __init__(self, lst, hull, pos, size):
+        self.lst = lst
+        self.hull = hull
+        retro.Sprite.__init__(self, retro.Image(size))
+        self.rect.topleft = pos
+
+    def draw_circle(self, bg_color, border_color, center, radius, width):
+        self.image.draw_circle(bg_color, center, radius, 0)
+        self.image.draw_circle(border_color, center, radius, width)
+
+    def draw_nodes(self, collection):
+        for p in collection:
+            self.draw_circle(
+                bg_color     = retro.WHITE,
+                border_color = retro.RED,
+                center       = tuple(p),
+                radius       = 10,
+                width        = 1,
+            )
+
+            txt = retro.Sprite(retro.Font(18).render(
+                text      = str(p.index),
+                color     = retro.RED,
+                antialias = True,
+            ))
+            txt.rect.center = tuple(p)
+            txt.draw(self.image)
+
+    def draw_dots(self, collection):
+        for p in collection:
+            self.image.draw_circle(
+                color  = retro.BLACK,
+                center = tuple(p),
+                radius = 2,
+                width  = 0,
+            )
+
+    def draw_edges(self, collection, color):
+        for i, _ in enumerate(collection):
+            if i == len(collection) - 1: return
+            p1 = collection[i]
+            p2 = collection[i + 1]
+            self.image.draw_line(
+                color     = color,
+                start_pos = tuple(p1),
+                end_pos   = tuple(p2),
+                width     = 1,
+            )
+
+    def draw(self, image):
+        self.image.fill(retro.WHITE)
+        self.draw_dots(self.lst)
+        self.draw_edges(self.lst, retro.BLACK)
+        self.draw_nodes(self.hull)
+        self.draw_edges(self.hull, retro.RED)
+        retro.Sprite.draw(self, image)
 
 class HList(retro.Sprite):
     def __init__(self, lst, pos, size):
