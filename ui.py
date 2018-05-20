@@ -32,3 +32,24 @@ class Cursor:
             offset = 800
         )
         cross(color = retro.BLACK, center = self.position, offset = 5)
+
+class HList:
+    def __init__(self, lst, pos, size):
+        self.lst    = lst
+        self.pos    = pos
+        self.width  = size[0]
+        self.height = size[1]
+
+    def draw(self, image):
+        for i, p in enumerate(self.lst):
+            rect = retro.Rect(*self.pos, self.height, self.height)
+            rect.left += i * self.height
+            image.draw_rect(color = retro.GREY, rect = rect, width = 1)
+
+            txt = retro.Sprite(retro.Font(int(self.height)).render(
+                text      = str(p.index),
+                color     = retro.BLACK,
+                antialias = True,
+            ))
+            txt.rect.center = rect.center
+            txt.draw(image)

@@ -1,7 +1,9 @@
 import sys
 import retro
-from cursor import Cursor
+from ui import Cursor, HList
 from melkman import Melkman
+
+melkman = Melkman()
 
 window = retro.Window(
     title     = "Melkman",
@@ -11,8 +13,11 @@ window = retro.Window(
 window.cursor(False)
 events = retro.Events()
 cursor = Cursor(events)
-
-melkman = Melkman()
+hlist = HList(
+    lst  = melkman.hull,
+    pos  = (0, 0),
+    size = (800, 25),
+)
 
 while 1:
     # Update
@@ -21,11 +26,11 @@ while 1:
 
     cursor.update()
     if events.mouse_press(retro.M_LEFT): melkman.add(cursor.position)
-    if events.key_press(retro.K_SPACE): print(melkman)
 
     # Draw
     window.fill(retro.WHITE)
     melkman.draw(window)
     cursor.draw(window)
+    hlist.draw(window)
 
     window.update()
