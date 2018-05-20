@@ -1,6 +1,13 @@
 import retro
 from vector import V2
 
+class Canvas(retro.Sprite):
+    def __init__(self, pos, size):
+        retro.Sprite.__init__(self, retro.Image(size))
+
+    def clear(self):
+        self.image.fill(retro.WHITE)
+
 class Cursor:
     def __init__(self, events):
         self.events = events
@@ -33,23 +40,29 @@ class Cursor:
         )
         cross(color = retro.BLACK, center = self.position, offset = 5)
 
-class HList:
+class HList(retro.Sprite):
     def __init__(self, lst, pos, size):
-        self.lst    = lst
-        self.pos    = pos
-        self.width  = size[0]
-        self.height = size[1]
+        self.lst = lst
+        retro.Sprite.__init__(self, retro.Image(size))
+        self.rect.topleft = pos
 
     def draw(self, image):
-        for i, p in enumerate(self.lst):
-            rect = retro.Rect(*self.pos, self.height, self.height)
-            rect.left += i * self.height
-            image.draw_rect(color = retro.GREY, rect = rect, width = 1)
+        def draw_rect(rect): self.image.draw_rect(
+            color = retro.GREY, rect = rect, width = 1
+        )
 
-            txt = retro.Sprite(retro.Font(int(self.height)).render(
+        self.image.fill(retro.WHITE)
+        draw_rect(retro.Rect(0, 0, *self.rect.size))
+        for i, p in enumerate(self.lst):
+            rect = retro.Rect(0, 0, self.rect.height, self.rect.height)
+            rect.x += i * self.rect.height
+            draw_rect(rect)
+
+            txt = retro.Sprite(retro.Font(int(self.rect.height)).render(
                 text      = str(p.index),
                 color     = retro.BLACK,
                 antialias = True,
             ))
             txt.rect.center = rect.center
-            txt.draw(image)
+            txt.draw(self.image)
+        retro.Sprite.draw(self, image)

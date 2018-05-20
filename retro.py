@@ -376,4 +376,3 @@ class Vec:
             for i, _ in enumerate(a): yield a[i], b
         else:
             for i, _ in enumerate(a): yield a[i], b[i]
-
