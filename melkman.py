@@ -1,14 +1,26 @@
+import random
 import collections
-import retro
 from vector import V2
 
 class SimplePolygonalChain:
-    # Generates a simple polygonal chain.
+    # Generates a simple polygonal chain containing `n` points and restricted
+    # to `area`.
+    # Complexity: O(n^2)
     @classmethod
-    def generate(cls): pass
+    def generate(cls, area, n):
+        lst = []
+        while len(lst) < n:
+            p = V2(
+                random.randrange(area.x, area.width),
+                random.randrange(area.y, area.height),
+                index = len(lst),
+            )
+            if cls.verify(lst, p): lst.append(p)
+        return lst
 
     # Given `lst`, a simple polygonal chain, verify if the property is still
     # true for `lst U {p}`.
+    # Complexity: O(n)
     @classmethod
     def verify(cls, lst, p):
         if len(lst) <= 1: return True
@@ -22,13 +34,41 @@ class SimplePolygonalChain:
         return True
 
 class Melkman:
-    def __init__(self):
-        self.lst = []
+    # Initializes the algorithm with a simple polygonal chain `lst`. If `lst`
+    # is empty, points can be added later.
+    def __init__(self, lst = []):
+        self.lst = lst
+        self.iter = iter(self.lst)
         self.hull = collections.deque()
 
-    # Adds a new point `p` to `self.lst` if {`p`} U `self.lst` satisfies the
-    # simple polygonal chain property. Then, apply the Melkman algorithm to
-    # decide whether to add this point to `self.hull` or not.
+    # Process the next point from `self.lst`.
+    # Then, execute one step of the Melkman algorithm to decide whether to add
+    # this point to `self.hull` or not.
+    # Complexity: O(1)
+    def next(self):
+        def init(i = 0):
+            hull = (self.lst[i + 2], self.lst[0],
+                    self.lst[i + 1], self.lst[i + 2])
+            self.rotation = V2.rotation(*hull[1:])
+            if self.rotation == 0: init(i + 1)
+            else:
+                self.hull.extend(hull)
+                for _ in range(i + 2): next(self.iter, None)
+
+        p = next(self.iter, None)
+        if p is None: print("finished") ; return
+
+        # Initialize hull
+        if len(self.hull) == 0: init()
+        # Update hull
+        else: self.step(p)
+
+
+    # Add a new point `p` to `self.lst` if `self.lst U {p}` satisfies the
+    # simple polygonal chain property.
+    # Then, execute one step of the Melkman algorithm to decide whether to add
+    # this point to `self.hull` or not.
+    # Complexity: O(n)
     def add(self, p):
         p = V2(p, index = len(self.lst))
         if not SimplePolygonalChain.verify(self.lst, p): return
@@ -46,6 +86,10 @@ class Melkman:
             self.lst.append(p)
             self.step(p)
 
+    # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
+    # contributes to the convex hull. The `self.rotation` property must be
+    # satisfied at each step of the algorithm.
+    # Complexity: O(1)
     def step(self, p):
         def rotstart(): return V2.rotation(
             self.hull[0], self.hull[1], p

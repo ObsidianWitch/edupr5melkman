@@ -1,9 +1,16 @@
 import sys
 import retro
 from ui import Cursor, Graphs, HList
-from melkman import Melkman
+from melkman import SimplePolygonalChain, Melkman
 
-melkman = Melkman()
+step = any(arg == "--step" for arg in sys.argv)
+
+melkman = Melkman(
+    lst = SimplePolygonalChain.generate(
+        area = retro.Rect(0, 0, 800, 500),
+        n    = 10,
+    ) if step else []
+)
 
 window = retro.Window(
     title     = "Melkman",
@@ -11,6 +18,7 @@ window = retro.Window(
     framerate = 60,
 )
 window.cursor(False)
+
 events = retro.Events()
 cursor = Cursor(events)
 graphs = Graphs(
@@ -33,7 +41,7 @@ while 1:
     cursor.update()
     if events.mouse_press(retro.M_LEFT) \
        and graphs.rect.collidepoint(tuple(cursor.position)) \
-    : melkman.add(cursor.position)
+    : melkman.add(cursor.position) if not step else melkman.next()
 
     # Draw
     graphs.draw(window)
