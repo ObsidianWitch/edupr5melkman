@@ -36,7 +36,6 @@ while 1:
     cursor.update()
     if events.key_press(retro.K_TAB):
         melkman.switch()
-        retro.pygame.display.set_caption(f"Melkman - {melkman.name}")
     if events.mouse_press(retro.M_LEFT) \
        and graphs.focused(cursor.position) \
     : melkman.next(cursor.position)

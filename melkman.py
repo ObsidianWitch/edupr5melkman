@@ -2,8 +2,7 @@ import random
 import collections
 from vector import V2
 
-# Proxy class for Melkman allowing to switch between the interactive and step
-# modes.
+# Proxy class for Melkman allowing to switch between modes.
 # * Interactive: points are added individually to the simple polygonal chain.
 # * Step: a simple polygonal chain is generated.
 class MelkmanMode:
