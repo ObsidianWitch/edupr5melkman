@@ -28,6 +28,7 @@ class MelkmanMode:
     def hull(self): return self.instance.hull
 
     def new(self):
+        self.finished = False
         if self.mode == self.INTERACTIVE:
             return Melkman([])
         elif self.mode == self.STEP:
@@ -40,8 +41,10 @@ class MelkmanMode:
         self.instance = self.new()
 
     def next(self, p):
-        if self.mode == self.INTERACTIVE: self.instance.add(p)
-        elif self.mode == self.STEP: self.instance.next()
+        if self.mode == self.INTERACTIVE:
+            self.instance.add(p)
+        elif self.mode == self.STEP:
+            self.finished = self.instance.next()
 
 class SimplePolygonalChain:
     # Generate a simple polygonal chain containing at most `n` points and
@@ -57,7 +60,6 @@ class SimplePolygonalChain:
                 index = len(lst),
             )
             if cls.verify(lst, p): lst.append(p)
-        print(len(lst))
         return lst
 
     # Given `lst`, a simple polygonal chain, verify if the property is still
@@ -97,13 +99,14 @@ class Melkman:
                 for _ in range(i + 2): next(self.iter, None)
 
         p = next(self.iter, None)
-        if p is None: print("finished") ; return
+        if p is None: return True # finished
 
         # Initialize hull
         if len(self.hull) == 0: init()
         # Update hull
         else: self.step(p)
 
+        return False
 
     # Add a new point `p` to `self.lst` if `self.lst U {p}` satisfies the
     # simple polygonal chain property.

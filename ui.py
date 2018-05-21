@@ -8,6 +8,19 @@ class Widget(retro.Sprite):
 
     def focused(self, p): return self.rect.collidepoint(tuple(p))
 
+class Titlebar:
+    def __init__(self, melkman):
+        self.melkman = melkman
+
+    def draw(self):
+        finished = " - finished" if self.melkman.finished else ""
+        retro.pygame.display.set_caption(
+        "Melkman"
+        f" - {self.melkman.name}"
+        f" - {len(self.melkman.lst)}"
+        f"{finished}"
+    )
+
 class Cursor:
     def __init__(self, events):
         self.events = events

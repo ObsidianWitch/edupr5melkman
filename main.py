@@ -1,6 +1,6 @@
 import sys
 import retro
-from ui import Cursor, Graphs, HList
+import ui
 from melkman import MelkmanMode
 
 melkman = MelkmanMode(
@@ -9,20 +9,20 @@ melkman = MelkmanMode(
 )
 
 window = retro.Window(
-    title     = f"Melkman - {melkman.name}",
+    title     = f"Melkman",
     size      = (800, 600),
     framerate = 60,
 )
 window.cursor(False)
-
 events = retro.Events()
-cursor = Cursor(events)
-graphs = Graphs(
+titlebar = ui.Titlebar(melkman)
+cursor = ui.Cursor(events)
+graphs = ui.Graphs(
     melkman = melkman,
     pos     = (0, 0),
     size    = (window.rect().width, window.rect().height - 25),
 )
-hlist = HList(
+hlist = ui.HList(
     melkman = melkman,
     pos     = graphs.rect.bottomleft,
     size    = (graphs.rect.width, 25),
@@ -42,6 +42,7 @@ while 1:
     : melkman.next(cursor.position)
 
     # Draw
+    titlebar.draw()
     graphs.draw(window)
     hlist.draw(window)
     cursor.draw(window)
