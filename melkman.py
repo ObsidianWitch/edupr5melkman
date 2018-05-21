@@ -2,6 +2,43 @@ import random
 import collections
 from vector import V2
 
+class MelkmanMode:
+    INTERACTIVE = 0
+    STEP = 1
+
+    def __init__(self, area, n, mode = INTERACTIVE):
+        self.area = area
+        self.n = n
+        self.mode = mode
+        self.instance = self.new()
+
+    @property
+    def name(self):
+        if self.mode == self.INTERACTIVE: return "interactive"
+        elif self.mode == self.STEP: return "step"
+
+    @property
+    def lst(self): return self.instance.lst
+
+    @property
+    def hull(self): return self.instance.hull
+
+    def new(self):
+        if self.mode == self.INTERACTIVE:
+            return Melkman([])
+        elif self.mode == self.STEP:
+            return Melkman(
+                SimplePolygonalChain.generate(self.area, self.n)
+            )
+
+    def switch(self):
+        self.mode = (self.mode + 1) % 2
+        self.instance = self.new()
+
+    def next(self, p):
+        if self.mode == self.INTERACTIVE: self.instance.add(p)
+        elif self.mode == self.STEP: self.instance.next()
+
 class SimplePolygonalChain:
     # Generates a simple polygonal chain containing `n` points and restricted
     # to `area`.
@@ -36,7 +73,7 @@ class SimplePolygonalChain:
 class Melkman:
     # Initializes the algorithm with a simple polygonal chain `lst`. If `lst`
     # is empty, points can be added later.
-    def __init__(self, lst = []):
+    def __init__(self, lst):
         self.lst = lst
         self.iter = iter(self.lst)
         self.hull = collections.deque()

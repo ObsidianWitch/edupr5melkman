@@ -34,9 +34,8 @@ class Cursor:
         cross(color = retro.BLACK, center = self.position, offset = 5)
 
 class Graphs:
-    def __init__(self, lst, hull, pos, size):
-        self.lst = lst
-        self.hull = hull
+    def __init__(self, melkman, pos, size):
+        self.melkman = melkman
         retro.Sprite.__init__(self, retro.Image(size))
         self.rect.topleft = pos
 
@@ -85,15 +84,15 @@ class Graphs:
 
     def draw(self, image):
         self.image.fill(retro.WHITE)
-        self.draw_dots(self.lst)
-        self.draw_edges(self.lst, retro.BLACK)
-        self.draw_nodes(self.hull)
-        self.draw_edges(self.hull, retro.RED)
+        self.draw_dots(self.melkman.lst)
+        self.draw_edges(self.melkman.lst, retro.BLACK)
+        self.draw_nodes(self.melkman.hull)
+        self.draw_edges(self.melkman.hull, retro.RED)
         retro.Sprite.draw(self, image)
 
 class HList(retro.Sprite):
-    def __init__(self, lst, pos, size):
-        self.lst = lst
+    def __init__(self, melkman, pos, size):
+        self.melkman = melkman
         retro.Sprite.__init__(self, retro.Image(size))
         self.rect.topleft = pos
 
@@ -104,7 +103,7 @@ class HList(retro.Sprite):
 
         self.image.fill(retro.WHITE)
         draw_rect(retro.Rect(0, 0, *self.rect.size))
-        for i, p in enumerate(self.lst):
+        for i, p in enumerate(self.melkman.hull):
             rect = retro.Rect(0, 0, self.rect.height, self.rect.height)
             rect.x += i * self.rect.height
             draw_rect(rect)
