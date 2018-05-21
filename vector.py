@@ -23,7 +23,12 @@ class V2:
         self.y - v.y,
     )
 
-    def __eq__(self, v): return (self.x == v.x) and (self.y == v.y)
+    def __eq__(self, v): return (
+        v is not None
+        and (self.x == v.x)
+        and (self.y == v.y)
+        and (self.index == v.index)
+    )
 
     @classmethod
     def sign(cls, a): return 1 if a > 0 \

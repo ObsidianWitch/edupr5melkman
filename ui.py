@@ -66,9 +66,11 @@ class Graphs(Widget):
         for p in collection:
             self.draw_circle(
                 bg_color     = retro.WHITE,
-                border_color = retro.RED,
+                border_color = retro.RED if p != self.melkman.latestp \
+                          else retro.MAGENTA,
                 center       = tuple(p),
-                radius       = 10,
+                radius       = 10 if p != self.melkman.latestp \
+                          else 11,
                 width        = 1,
             )
 
@@ -83,9 +85,11 @@ class Graphs(Widget):
     def draw_dots(self, collection):
         for p in collection:
             self.image.draw_circle(
-                color  = retro.BLACK,
+                color  = retro.BLACK if p != self.melkman.latestp \
+                    else retro.MAGENTA,
                 center = tuple(p),
-                radius = 2,
+                radius = 2 if p != self.melkman.latestp \
+                    else 3,
                 width  = 0,
             )
 

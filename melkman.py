@@ -27,8 +27,15 @@ class MelkmanMode:
     @property
     def hull(self): return self.instance.hull
 
+    @property
+    def finished(self): return (
+        (self.mode == self.STEP)
+        and self.hull
+        and (not self.latestp)
+    )
+
     def new(self):
-        self.finished = False
+        self.latestp = None
         if self.mode == self.INTERACTIVE:
             return Melkman([])
         elif self.mode == self.STEP:
@@ -42,9 +49,9 @@ class MelkmanMode:
 
     def next(self, p):
         if self.mode == self.INTERACTIVE:
-            self.instance.add(p)
+            self.latestp = self.instance.add(p)
         elif self.mode == self.STEP:
-            self.finished = self.instance.next()
+            self.latestp = self.instance.next()
 
 class SimplePolygonalChain:
     # Generate a simple polygonal chain containing at most `n` points and
@@ -87,6 +94,7 @@ class Melkman:
     # Process the next point from `self.lst`.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
+    # Returns the latest processed point.
     # Complexity: O(1)
     def next(self):
         def init(i = 0):
@@ -96,39 +104,45 @@ class Melkman:
             if self.rotation == 0: init(i + 1)
             else:
                 self.hull.extend(hull)
-                for _ in range(i + 2): next(self.iter, None)
-
-        p = next(self.iter, None)
-        if p is None: return True # finished
+                for _ in range(i + 3): next(self.iter, None)
+                return self.hull[-1]
 
         # Initialize hull
-        if len(self.hull) == 0: init()
-        # Update hull
-        else: self.step(p)
+        if len(self.hull) == 0: return init()
 
-        return False
+        # Update hull
+        p = next(self.iter, None)
+        if p is None: return # finished
+        self.step(p)
+
+        return p
 
     # Add a new point `p` to `self.lst` if `self.lst U {p}` satisfies the
     # simple polygonal chain property.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
+    # Returns the latest processed point.
     # Complexity: O(n)
     def add(self, p):
-        p = V2(p, index = len(self.lst))
-        if not SimplePolygonalChain.verify(self.lst, p): return
-
-        # Initialize hull
-        if len(self.hull) == 0:
+        def init(p):
             self.lst.append(p)
             if len(self.lst) < 3: return
             hull = (self.lst[-1], self.lst[0], self.lst[-2], self.lst[-1])
             self.rotation = V2.rotation(*hull[1:])
             if self.rotation == 0: return # collinear
             self.hull.extend(hull)
+
+        p = V2(p, index = len(self.lst))
+        if not SimplePolygonalChain.verify(self.lst, p): return
+
+        # Initialize hull
+        if len(self.hull) == 0: init(p)
         # Update hull
         else:
             self.lst.append(p)
             self.step(p)
+
+        return self.lst[-1]
 
     # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
     # contributes to the convex hull. The `self.rotation` property must be
