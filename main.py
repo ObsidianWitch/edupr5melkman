@@ -5,7 +5,7 @@ from melkman import MelkmanMode
 
 melkman = MelkmanMode(
     area = retro.Rect(0, 0, 800, 500),
-    n    = 10,
+    n    = 50,
 )
 
 window = retro.Window(
@@ -38,7 +38,7 @@ while 1:
         melkman.switch()
         retro.pygame.display.set_caption(f"Melkman - {melkman.name}")
     if events.mouse_press(retro.M_LEFT) \
-       and graphs.rect.collidepoint(tuple(cursor.position)) \
+       and graphs.focused(cursor.position) \
     : melkman.next(cursor.position)
 
     # Draw

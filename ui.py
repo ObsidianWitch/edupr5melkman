@@ -1,6 +1,13 @@
 import retro
 from vector import V2
 
+class Widget(retro.Sprite):
+    def __init__(self, pos, size):
+        retro.Sprite.__init__(self, retro.Image(size))
+        self.rect.topleft = pos
+
+    def focused(self, p): return self.rect.collidepoint(tuple(p))
+
 class Cursor:
     def __init__(self, events):
         self.events = events
@@ -33,11 +40,10 @@ class Cursor:
         )
         cross(color = retro.BLACK, center = self.position, offset = 5)
 
-class Graphs:
+class Graphs(Widget):
     def __init__(self, melkman, pos, size):
+        Widget.__init__(self, pos, size)
         self.melkman = melkman
-        retro.Sprite.__init__(self, retro.Image(size))
-        self.rect.topleft = pos
 
     def draw_circle(self, bg_color, border_color, center, radius, width):
         self.image.draw_circle(bg_color, center, radius, 0)
@@ -88,13 +94,12 @@ class Graphs:
         self.draw_edges(self.melkman.lst, retro.BLACK)
         self.draw_nodes(self.melkman.hull)
         self.draw_edges(self.melkman.hull, retro.RED)
-        retro.Sprite.draw(self, image)
+        Widget.draw(self, image)
 
-class HList(retro.Sprite):
+class HList(Widget):
     def __init__(self, melkman, pos, size):
+        Widget.__init__(self, pos, size)
         self.melkman = melkman
-        retro.Sprite.__init__(self, retro.Image(size))
-        self.rect.topleft = pos
 
     def draw(self, image):
         def draw_rect(rect): self.image.draw_rect(
@@ -115,4 +120,4 @@ class HList(retro.Sprite):
             ))
             txt.rect.center = rect.center
             txt.draw(self.image)
-        retro.Sprite.draw(self, image)
+        Widget.draw(self, image)

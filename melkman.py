@@ -2,6 +2,10 @@ import random
 import collections
 from vector import V2
 
+# Proxy class for Melkman allowing to switch between the interactive and step
+# modes.
+# * Interactive: points are added individually to the simple polygonal chain.
+# * Step: a simple polygonal chain is generated.
 class MelkmanMode:
     INTERACTIVE = 0
     STEP = 1
@@ -40,19 +44,20 @@ class MelkmanMode:
         elif self.mode == self.STEP: self.instance.next()
 
 class SimplePolygonalChain:
-    # Generates a simple polygonal chain containing `n` points and restricted
-    # to `area`.
+    # Generate a simple polygonal chain containing at most `n` points and
+    # restricted to `area`.
     # Complexity: O(n^2)
     @classmethod
     def generate(cls, area, n):
         lst = []
-        while len(lst) < n:
+        for _ in range(n):
             p = V2(
                 random.randrange(area.x, area.width),
                 random.randrange(area.y, area.height),
                 index = len(lst),
             )
             if cls.verify(lst, p): lst.append(p)
+        print(len(lst))
         return lst
 
     # Given `lst`, a simple polygonal chain, verify if the property is still
@@ -63,7 +68,6 @@ class SimplePolygonalChain:
         if len(lst) <= 1: return True
         for i, _ in enumerate(lst):
             if i == len(lst) - 1: break
-            va = lst[i+1] - lst[i]
             if V2.intersection(
                 a = lst[i],  b = lst[i + 1],
                 c = lst[-1], d = p,
