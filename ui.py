@@ -70,7 +70,7 @@ class Graphs(Widget):
                           else retro.MAGENTA,
                 center       = tuple(p),
                 radius       = 10 if p != self.melkman.latestp \
-                          else 11,
+                          else 12,
                 width        = 1,
             )
 
@@ -89,7 +89,7 @@ class Graphs(Widget):
                     else retro.MAGENTA,
                 center = tuple(p),
                 radius = 2 if p != self.melkman.latestp \
-                    else 3,
+                    else 4,
                 width  = 0,
             )
 
