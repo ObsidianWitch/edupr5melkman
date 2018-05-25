@@ -1,5 +1,33 @@
+import sys
 import retro
 from vector import V2
+
+class Window(retro.Window):
+    def __init__(self, title, size, framerate = 30):
+        retro.Window.__init__(self, title, size, framerate)
+        self.events = retro.Events()
+
+        self.cursor(False)
+        self.cursor = Cursor(self.events)
+
+        self.buffer = retro.Sprite(retro.Image(size))
+        self.widgets = []
+
+    def update_buffer(self):
+        for w in self.widgets: w.draw(self.buffer.image)
+
+    def loop(self, instructions):
+        while 1:
+            self.events.update()
+            if self.events.event(retro.QUIT): sys.exit()
+
+            self.cursor.update()
+
+            instructions()
+
+            self.buffer.draw(self)
+            self.cursor.draw(self)
+            self.update()
 
 class Widget(retro.Sprite):
     def __init__(self, pos, size):
@@ -12,7 +40,7 @@ class Titlebar:
     def __init__(self, melkman):
         self.melkman = melkman
 
-    def draw(self):
+    def draw(self, *args):
         finished = " - finished" if self.melkman.finished else ""
         retro.pygame.display.set_caption(
         "Melkman"

@@ -1,4 +1,3 @@
-import sys
 import retro
 import ui
 from melkman import MelkmanMode
@@ -8,15 +7,12 @@ melkman = MelkmanMode(
     n    = 50,
 )
 
-window = retro.Window(
+window = ui.Window(
     title     = f"Melkman",
     size      = (800, 600),
     framerate = 60,
 )
-window.cursor(False)
-events = retro.Events()
 titlebar = ui.Titlebar(melkman)
-cursor = ui.Cursor(events)
 graphs = ui.Graphs(
     melkman = melkman,
     pos     = (0, 0),
@@ -27,23 +23,18 @@ hlist = ui.HList(
     pos     = graphs.rect.bottomleft,
     size    = (graphs.rect.width, 25),
 )
+window.widgets.extend((titlebar, graphs, hlist))
+window.update_buffer()
 
-while 1:
-    # Update
-    events.update()
-    if events.event(retro.QUIT): sys.exit()
-
-    cursor.update()
-    if events.key_press(retro.K_TAB):
+def main():
+    if window.events.key_press(retro.K_TAB):
         melkman.switch()
-    if events.mouse_press(retro.M_LEFT) \
-       and graphs.focused(cursor.position) \
-    : melkman.next(cursor.position)
+        window.update_buffer()
 
-    # Draw
-    titlebar.draw()
-    graphs.draw(window)
-    hlist.draw(window)
-    cursor.draw(window)
+    if window.events.mouse_press(retro.M_LEFT) \
+       and graphs.focused(window.cursor.position) \
+    :
+        melkman.next(window.cursor.position)
+        window.update_buffer()
 
-    window.update()
+window.loop(main)
