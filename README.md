@@ -16,7 +16,8 @@ clicks, a point is processed with the Mekman algorithm.
 
 ## Actions
 
-| Inputs     | Actions            |
-|------------|--------------------|
-| Left click | process next point |
-| Tab        | switch mode        |
+| Inputs     | Actions                                    |
+|------------|--------------------------------------------|
+| Left click | Process next point                         |
+| Tab        | Switch mode                                |
+| Shift      | Enable cursor horizontal & vertical guides |
