@@ -31,9 +31,9 @@ class V2:
     )
 
     @classmethod
-    def sign(cls, a): return 1 if a > 0 \
+    def sign(cls, a): return  1 if a > 0 \
                         else -1 if a < 0 \
-                        else 0
+                        else  0
 
     # Given a left-handed 2D coordinate system:
     # Returns -1 if `c` (point) is on the left of `ab` (direction vector) -> CCW.
@@ -46,12 +46,13 @@ class V2:
     # Returns  0 if `c` is inside `ab`.
     # Returns  1 if `c` is in front of `ab`.
     def position(a, b, c):
-        inside = (V2.sign(V2.dot(a - c, b - c)) <= 0)
-        behind = (V2.sign(V2.dot(b - a, c - a)) < 0)
+        inside = (V2.dot(a - c, b - c) <= 0)
+        behind = (V2.dot(b - a, c - a) < 0)
         front = (not behind) and (not inside)
         return  1 if front \
           else  0 if inside \
-          else -1
+          else -1 if behind \
+          else None
 
     @classmethod
     def dot(cls, va, vb): return (va.x * vb.x) + (va.y * vb.y)
@@ -70,9 +71,9 @@ class V2:
         if denominator == 0:
             colinear = (cls.cross(ca, cd) == 0)
             overlap = (cls.position(a, b, c) == 0) \
-            or (cls.position(a, b, d) == 0) \
-            or (cls.position(c, d, a) == 0) \
-            or (cls.position(c, d, b) == 0)
+                   or (cls.position(a, b, d) == 0) \
+                   or (cls.position(c, d, a) == 0) \
+                   or (cls.position(c, d, b) == 0)
             return colinear and overlap
 
         u = cls.cross(ca, cd) / denominator
