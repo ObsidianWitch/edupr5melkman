@@ -2,8 +2,7 @@
 
 ## Dependencies
 
-* [pygame](https://www.pygame.org)
-* [numpy](http://www.numpy.org/)
+* [Tcl/Tk](http://tcl.sourceforge.net/)
 
 ## Run (CLI)
 

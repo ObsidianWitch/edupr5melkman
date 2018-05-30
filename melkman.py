@@ -1,3 +1,4 @@
+import types
 import random
 import collections
 import itertools
@@ -45,8 +46,9 @@ class StepMode(Mode):
         self.latestp = self.instance.next()
 
 class TestMode(Mode):
-    NPOINTS = 250
+    NPOINTS = 300
     CHECKS  = 5000
+    SLICES  = 10
 
     def __init__(self, area):
         Mode.__init__(self, area)
@@ -63,23 +65,29 @@ class TestMode(Mode):
     def finished(self): return self.checks >= self.CHECKS
 
     def next(self, *args):
-        while self.checks < self.CHECKS:
+        for _ in range(self.SLICES):
+            if self.finished: return False
             self.instance = Melkman(
                 SimplePolygonalChain.generate(self.area, self.NPOINTS)
             )
             self.instance.run()
             if self.instance.check(): self.passed += 1
-            else: self.failed += 1 ; break
-            print(self.passed, self.failed)
+            else: self.failed += 1 ; return False
+        return True
 
 # Proxy class for Melkman allowing to switch between modes.
 # * Interactive: points are added individually to the simple polygonal chain.
 # * Step: a simple polygonal chain is generated.
 # * Test: algorithm robustness test.
-class ModeSwitcher:
+class ModePicker:
+    MODES = types.SimpleNamespace(
+        interactive = InteractiveMode,
+        step        = StepMode,
+        test        = TestMode,
+    )
+
     def __init__(self, area):
-        self.modes = itertools.cycle((InteractiveMode, StepMode, TestMode))
-        self.mode = next(self.modes)(area)
+        self.mode = InteractiveMode(area)
         self.area = area
 
     def __getattr__(self, key):
@@ -87,10 +95,8 @@ class ModeSwitcher:
         if value is None: value = getattr(self.mode.instance, key, None)
         return value
 
-    def switch(self):
-        self.mode = next(self.modes)(self.area)
-
-    def next(self, p): self.mode.next(p)
+    def select(self, mode):
+        self.mode = mode(self.area)
 
 class SimplePolygonalChain:
     # Generate a simple polygonal chain containing at most `n` points and
