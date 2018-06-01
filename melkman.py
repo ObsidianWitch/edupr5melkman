@@ -7,12 +7,7 @@ class Mode:
     def __init__(self, area):
         self.area = area
         self.latestp = None
-
-    @property
-    def lst(self): return self.instance.lst
-
-    @property
-    def hull(self): return self.instance.hull
+        self.instance = None
 
 class InteractiveMode(Mode):
     def __init__(self, area):
@@ -42,7 +37,7 @@ class StepMode(Mode):
 
     @property
     def finished(self): return (
-        self.hull
+        self.instance.hull
         and (not self.latestp)
     )
 
@@ -57,7 +52,6 @@ class TestMode(Mode):
         Mode.__init__(self, area)
         self.passed  = 0
         self.failed  = 0
-        self.instance = None
 
     @property
     def name(self): return "test"
@@ -88,22 +82,10 @@ class ModeSwitcher:
         self.mode = next(self.modes)(area)
         self.area = area
 
-    @property
-    def name(self): return self.mode.name
-
-    @property
-    def finished(self): return self.mode.finished
-
-    @property
-    def latestp(self): return self.mode.latestp
-
-    @property
-    def lst(self): return self.mode.instance.lst if self.mode.instance \
-                     else ()
-
-    @property
-    def hull(self): return self.mode.instance.hull if self.mode.instance \
-                     else ()
+    def __getattr__(self, key):
+        value = getattr(self.mode, key, None)
+        if value is None: value = getattr(self.mode.instance, key, None)
+        return value
 
     def switch(self):
         self.mode = next(self.modes)(self.area)

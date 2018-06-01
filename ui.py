@@ -41,13 +41,10 @@ class Titlebar:
         self.melkman = melkman
 
     def draw(self, *args):
-        finished = " - finished" if self.melkman.finished else ""
-        retro.pygame.display.set_caption(
-        "Melkman"
-        f" - {self.melkman.name}"
-        f" - {len(self.melkman.lst)}"
-        f"{finished}"
-    )
+        caption = ["Melkman", self.melkman.name]
+        if self.melkman.instance: caption.append(str(len(self.melkman.lst)))
+        if self.melkman.finished: caption.append("finished")
+        retro.pygame.display.set_caption(" - ".join(caption))
 
 class Cursor:
     def __init__(self, events):
@@ -135,10 +132,11 @@ class Graphs(Widget):
 
     def draw(self, image):
         self.image.fill(retro.WHITE)
-        self.draw_dots(self.melkman.lst)
-        self.draw_edges(self.melkman.lst, retro.BLACK)
-        self.draw_nodes(self.melkman.hull)
-        self.draw_edges(self.melkman.hull, retro.RED)
+        if self.melkman.instance:
+            self.draw_dots(self.melkman.lst)
+            self.draw_edges(self.melkman.lst, retro.BLACK)
+            self.draw_nodes(self.melkman.hull)
+            self.draw_edges(self.melkman.hull, retro.RED)
         Widget.draw(self, image)
 
 class HList(Widget):
@@ -151,9 +149,7 @@ class HList(Widget):
             color = retro.GREY, rect = rect, width = 1
         )
 
-        self.image.fill(retro.WHITE)
-        draw_rect(retro.Rect(0, 0, *self.rect.size))
-        for i, p in enumerate(self.melkman.hull):
+        def draw_cell(i, p):
             rect = retro.Rect(0, 0, self.rect.height, self.rect.height)
             rect.x += i * self.rect.height
             draw_rect(rect)
@@ -165,4 +161,9 @@ class HList(Widget):
             ))
             txt.rect.center = rect.center
             txt.draw(self.image)
+
+        self.image.fill(retro.WHITE)
+        draw_rect(retro.Rect(0, 0, *self.rect.size))
+        if self.melkman.instance:
+            for i, p in enumerate(self.melkman.hull): draw_cell(i, p)
         Widget.draw(self, image)
