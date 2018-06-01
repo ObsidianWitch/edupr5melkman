@@ -163,7 +163,7 @@ class Melkman:
             hull = (self.lst[i + 2], self.lst[0],
                     self.lst[i + 1], self.lst[i + 2])
             self.rotation = V2.rotation(*hull[1:])
-            if self.rotation == 0: init(i + 1)
+            if self.rotation == 0: return init(i + 1)
             else:
                 self.hull.extend(hull)
                 for _ in range(i + 3): next(self.iter, None)
