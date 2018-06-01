@@ -1,24 +1,12 @@
 import random
 import collections
+import itertools
 from vector import V2
 
-# Proxy class for Melkman allowing to switch between modes.
-# * Interactive: points are added individually to the simple polygonal chain.
-# * Step: a simple polygonal chain is generated.
-class MelkmanMode:
-    INTERACTIVE = 0
-    STEP = 1
-
-    def __init__(self, area, n, mode = INTERACTIVE):
+class Mode:
+    def __init__(self, area):
         self.area = area
-        self.n = n
-        self.mode = mode
-        self.instance = self.new()
-
-    @property
-    def name(self):
-        if self.mode == self.INTERACTIVE: return "interactive"
-        elif self.mode == self.STEP: return "step"
+        self.latestp = None
 
     @property
     def lst(self): return self.instance.lst
@@ -26,31 +14,101 @@ class MelkmanMode:
     @property
     def hull(self): return self.instance.hull
 
+class InteractiveMode(Mode):
+    def __init__(self, area):
+        Mode.__init__(self, area)
+        self.instance = Melkman([])
+
+    @property
+    def name(self): return "interactive"
+
+    @property
+    def finished(self): return False
+
+    def next(self, p):
+        self.latestp = self.instance.add(p)
+
+class StepMode(Mode):
+    NPOINTS = 100
+
+    def __init__(self, area):
+        Mode.__init__(self, area)
+        self.instance = Melkman(
+            SimplePolygonalChain.generate(self.area, self.NPOINTS)
+        )
+
+    @property
+    def name(self): return "step"
+
     @property
     def finished(self): return (
-        (self.mode == self.STEP)
-        and self.hull
+        self.hull
         and (not self.latestp)
     )
 
-    def new(self):
-        self.latestp = None
-        if self.mode == self.INTERACTIVE:
-            return Melkman([])
-        elif self.mode == self.STEP:
-            return Melkman(
-                SimplePolygonalChain.generate(self.area, self.n)
+    def next(self, *args):
+        self.latestp = self.instance.next()
+
+class TestMode(Mode):
+    NPOINTS = 250
+    CHECKS  = 5000
+
+    def __init__(self, area):
+        Mode.__init__(self, area)
+        self.passed  = 0
+        self.failed  = 0
+        self.instance = None
+
+    @property
+    def name(self): return "test"
+
+    @property
+    def checks(self): return self.passed + self.failed
+
+    @property
+    def finished(self): return self.checks >= self.CHECKS
+
+    def next(self, *args):
+        while self.checks < self.CHECKS:
+            self.instance = Melkman(
+                SimplePolygonalChain.generate(self.area, self.NPOINTS)
             )
+            self.instance.run()
+            if self.instance.check(): self.passed += 1
+            else: self.failed += 1 ; break
+            print(self.passed, self.failed)
+
+# Proxy class for Melkman allowing to switch between modes.
+# * Interactive: points are added individually to the simple polygonal chain.
+# * Step: a simple polygonal chain is generated.
+# * Test: algorithm robustness test.
+class ModeSwitcher:
+    def __init__(self, area):
+        self.modes = itertools.cycle((InteractiveMode, StepMode, TestMode))
+        self.mode = next(self.modes)(area)
+        self.area = area
+
+    @property
+    def name(self): return self.mode.name
+
+    @property
+    def finished(self): return self.mode.finished
+
+    @property
+    def latestp(self): return self.mode.latestp
+
+    @property
+    def lst(self): return self.mode.instance.lst if self.mode.instance \
+                     else ()
+
+    @property
+    def hull(self): return self.mode.instance.hull if self.mode.instance \
+                     else ()
 
     def switch(self):
-        self.mode = (self.mode + 1) % 2
-        self.instance = self.new()
+        self.mode = next(self.modes)(self.area)
 
-    def next(self, p):
-        if self.mode == self.INTERACTIVE:
-            self.latestp = self.instance.add(p)
-        elif self.mode == self.STEP:
-            self.latestp = self.instance.next()
+    def next(self, p): self.mode.next(p)
 
 class SimplePolygonalChain:
     # Generate a simple polygonal chain containing at most `n` points and
@@ -89,6 +147,11 @@ class Melkman:
         self.lst = lst
         self.iter = iter(self.lst)
         self.hull = collections.deque()
+
+    # Process all points from `self.lst`.
+    # Complexity: O(n)
+    def run(self):
+        while self.next(): pass
 
     # Process the next point from `self.lst`.
     # Then, execute one step of the Melkman algorithm to decide whether to add
@@ -165,3 +228,20 @@ class Melkman:
     def __repr__(self): return " ".join(
         str(p.index) for p in self.hull
     )
+
+    # Once the algorithm has processed the whole `self.lst`, this method can
+    # check the validity of the convex hull.
+    # 1. Check the rotation stays the same for the whole hull.
+    # 2. For each edge [AB] in the hull, for every point [P] from `self.lst`,
+    #    check that the rotation for (A, B, P) is equal to `self.rotation` or 0
+    #    (colinear). It means that each point must be inside or on the hull.
+    # Note: by verifying the second property, we also verify the first one.
+    def check(self):
+        for i, _ in enumerate(self.hull):
+            if i == len(self.hull) - 1: break # NB deque cannot be sliced
+            a = self.hull[i]
+            b = self.hull[i + 1]
+            for p in self.lst:
+                r = V2.rotation(a, b, p)
+                if (r != self.rotation) and (r != 0): return False
+        return True

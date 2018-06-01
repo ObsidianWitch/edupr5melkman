@@ -1,10 +1,9 @@
 import retro
 import ui
-from melkman import MelkmanMode
+import melkman
 
-melkman = MelkmanMode(
+melkman = melkman.ModeSwitcher(
     area = retro.Rect(0, 0, 800, 500),
-    n    = 50,
 )
 
 window = ui.Window(
