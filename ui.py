@@ -54,7 +54,7 @@ class Window(tk.Tk):
             loop = self.melkman.next((event.x, event.y))
             self.information.update()
             self.canvas.update()
-            tk.Tk.update_idletasks(self)
+            tk.Tk.update(self)
             return loop
         while process(): pass
 
@@ -89,7 +89,7 @@ class Information(tk.Frame):
 
         if self.melkman.checks is not None: txt.append(
             f"Checks: ✓ {self.melkman.passed}"
-            f" / x {self.melkman.failed}"
+            f" / X {self.melkman.failed}"
             f" / N {self.melkman.CHECKS}"
         )
 
