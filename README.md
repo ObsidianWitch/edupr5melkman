@@ -19,11 +19,3 @@ the convex hull.
 clicks, a point is processed with the Mekman algorithm.
 * **Test**: test the algorithm's robustness by applying it to 5000 generated
 simple polygonal chain.
-
-## Actions
-
-| Inputs     | Actions                                    |
-|------------|--------------------------------------------|
-| Left click | Process next point                         |
-| Tab        | Switch mode                                |
-| Shift      | Enable cursor horizontal & vertical guides |
