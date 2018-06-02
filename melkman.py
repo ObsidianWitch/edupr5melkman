@@ -219,14 +219,12 @@ class Melkman:
 
     # Once the algorithm has processed the whole `self.lst`, this method can
     # check the validity of the convex hull.
-    # 1. Check the rotation stays the same for the whole hull.
-    # 2. For each edge [AB] in the hull, for every point [P] from `self.lst`,
-    #    check that the rotation for (A, B, P) is equal to `self.rotation` or 0
-    #    (colinear). It means that each point must be inside or on the hull.
-    # Note: by verifying the second property, we also verify the first one.
+    # For each edge [AB] in the hull, for every point [P] from `self.lst`,
+    # check that the rotation for (A, B, P) is equal to `self.rotation` or 0
+    # (colinear). It means that each point must be inside or on the hull.
     def check(self):
-        for i, _ in enumerate(self.hull):
-            if i == len(self.hull) - 1: break # NB deque cannot be sliced
+        # NB deque does not allow slice notation
+        for i in range(len(self.hull) - 1):
             a = self.hull[i]
             b = self.hull[i + 1]
             for p in self.lst:
