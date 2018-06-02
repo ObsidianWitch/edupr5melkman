@@ -219,7 +219,7 @@ class Melkman:
 
     # Once the algorithm has processed the whole `self.lst`, this method can
     # check the validity of the convex hull.
-    # For each edge [AB] in the hull, for every point [P] from `self.lst`,
+    # For each edge [AB] in the hull, for every point P from `self.lst`,
     # check that the rotation for (A, B, P) is equal to `self.rotation` or 0
     # (colinear). It means that each point must be inside or on the hull.
     def check(self):
