@@ -1,8 +1,8 @@
 import tkinter as tk
 
 class Window(tk.Tk):
-    def __init__(self, melkman):
-        self.melkman = melkman
+    def __init__(self, controller):
+        self.controller = controller
 
         tk.Tk.__init__(self)
         self.title("Melkman")
@@ -18,36 +18,34 @@ class Window(tk.Tk):
         menu_button.grid(row = 0, column = 0, sticky = tk.N + tk.S + tk.E + tk.W)
         menu_button.menu = tk.Menu(menu_button)
         menu_button["menu"] = menu_button.menu
-        for i, mode in enumerate(self.melkman.MODES):
+        for i, mode in enumerate(self.controller.MODES):
             add_mode = lambda mode: menu_button.menu.add_command(
                 label   = mode.NAME,
                 command = lambda: self.select_mode(mode),
             ) ; add_mode(mode)
 
-        self.information = Information(top_frame, melkman)
+        self.information = Information(top_frame, controller)
         self.information.grid(row = 0, column = 1, sticky = tk.W)
 
-        self.canvas = Canvas(self, melkman)
+        self.canvas = Canvas(self, controller)
         self.canvas.grid(row = 1, column = 0)
-        self.canvas.bind("<Button-1>", self.click)
+        self.canvas.bind("<Button-1>", self.add_click)
 
     def select_mode(self, mode):
-        self.melkman.select(mode)
+        self.controller.select(mode)
+        self.update()
+
+    def add_click(self, event):
+        self.controller.next((event.x, event.y))
+
+    def update(self):
         self.information.update()
         self.canvas.update()
-
-    def click(self, event):
-        def process():
-            loop = self.melkman.next((event.x, event.y))
-            self.information.update()
-            self.canvas.update()
-            tk.Tk.update(self)
-            return loop
-        while process(): pass
+        tk.Tk.update(self)
 
 class Information(tk.Frame):
-    def __init__(self, parent, melkman):
-        self.melkman = melkman
+    def __init__(self, parent, controller):
+        self.controller = controller
 
         tk.Frame.__init__(self, parent)
 
@@ -63,32 +61,30 @@ class Information(tk.Frame):
         )
         self.hull_label.grid(row = 1, column = 0, sticky = tk.W)
 
-        self.update()
-
     def update_state(self):
         txt = []
-        txt.append(f"Mode: {self.melkman.NAME}")
+        txt.append(f"Mode: {self.controller.NAME}")
 
-        if self.melkman.instance is not None: txt.append(
-            f"Points: {len(self.melkman.lst)}"
+        if self.controller.melkman is not None: txt.append(
+            f"Points: {len(self.controller.lst)}"
         )
         else: txt.append("Points: 0")
 
-        if self.melkman.checks is not None: txt.append(
-            f"Checks: ✓ {self.melkman.passed}"
-            f" / X {self.melkman.failed}"
-            f" / N {self.melkman.CHECKS}"
+        if self.controller.checks is not None: txt.append(
+            f"Checks: ✓ {self.controller.passed}"
+            f" / X {self.controller.failed}"
+            f" / N {self.controller.CHECKS}"
         )
 
-        if self.melkman.finished: txt.append("finished")
+        if self.controller.finished: txt.append("finished")
 
         self.state_label["text"] = " | ".join(txt)
 
     def update_hull(self):
         txt = "hull: "
-        if not self.melkman.hull: txt += "∅"
+        if not self.controller.hull: txt += "∅"
         else: txt += ", ".join((
-            str(p.index) for p in self.melkman.hull
+            str(p.index) for p in self.controller.hull
         ))
         self.hull_label["text"] = txt
 
@@ -97,8 +93,8 @@ class Information(tk.Frame):
         self.update_hull()
 
 class Canvas(tk.Canvas):
-    def __init__(self, parent, melkman):
-        self.melkman = melkman
+    def __init__(self, parent, controller):
+        self.controller = controller
 
         tk.Canvas.__init__(self, parent,
             width  = 800,
@@ -128,6 +124,7 @@ class Canvas(tk.Canvas):
     # * Leave: decrease the size of the circle
     # * Right click: remove point associated with the circle
     def bind_circle(self, p, *tags):
+        pass
         circle_tag = tags[0]
         for tag in tags:
             self.tag_bind(tag, "<Enter>",
@@ -141,7 +138,7 @@ class Canvas(tk.Canvas):
             )
 
     def draw_nodes(self, collection):
-        latestp = self.melkman.latestp
+        latestp = self.controller.latestp
         for p in collection:
             tag1 = self.draw_circle(
                 center   = p,
@@ -156,7 +153,7 @@ class Canvas(tk.Canvas):
             self.bind_circle(p, tag1, tag2)
 
     def draw_dots(self, collection):
-        latestp = self.melkman.latestp
+        latestp = self.controller.latestp
         for p in collection:
             tag = self.draw_circle(
                 center   = p,
@@ -179,8 +176,8 @@ class Canvas(tk.Canvas):
 
     def update(self):
         self.delete("all")
-        if self.melkman.instance is None: return
-        self.draw_edges(self.melkman.lst, "black")
-        self.draw_dots(self.melkman.lst)
-        self.draw_edges(self.melkman.hull, "red")
-        self.draw_nodes(self.melkman.hull)
+        if self.controller.melkman is None: return
+        self.draw_edges(self.controller.lst, "black")
+        self.draw_dots(self.controller.lst)
+        self.draw_edges(self.controller.hull, "red")
+        self.draw_nodes(self.controller.hull)
