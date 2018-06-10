@@ -18,24 +18,11 @@ class Window(tk.Tk):
         menu_button.grid(row = 0, column = 0, sticky = tk.N + tk.S + tk.E + tk.W)
         menu_button.menu = tk.Menu(menu_button)
         menu_button["menu"] = menu_button.menu
-        menu_button.menu.add_command(
-            label   = "Interactive",
-            command = lambda: self.select_mode(
-                self.melkman.MODES.interactive
-            ),
-        )
-        menu_button.menu.add_command(
-            label   = "Step",
-            command = lambda: self.select_mode(
-                self.melkman.MODES.step
-            )
-        )
-        menu_button.menu.add_command(
-            label   = "Test",
-            command = lambda: self.select_mode(
-                self.melkman.MODES.test
-            )
-        )
+        for i, mode in enumerate(self.melkman.MODES):
+            add_mode = lambda mode: menu_button.menu.add_command(
+                label   = mode.NAME,
+                command = lambda: self.select_mode(mode),
+            ) ; add_mode(mode)
 
         self.information = Information(top_frame, melkman)
         self.information.grid(row = 0, column = 1, sticky = tk.W)
@@ -80,7 +67,7 @@ class Information(tk.Frame):
 
     def update_state(self):
         txt = []
-        txt.append(f"Mode: {self.melkman.name}")
+        txt.append(f"Mode: {self.melkman.NAME}")
 
         if self.melkman.instance is not None: txt.append(
             f"Points: {len(self.melkman.lst)}"

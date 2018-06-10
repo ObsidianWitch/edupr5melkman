@@ -1,7 +1,7 @@
-import types
 import random
 import collections
 import itertools
+from utils import Table
 from vector import V2
 
 class Mode:
@@ -11,12 +11,11 @@ class Mode:
         self.instance = None
 
 class InteractiveMode(Mode):
+    NAME = "interactive"
+
     def __init__(self, area):
         Mode.__init__(self, area)
         self.instance = Melkman([])
-
-    @property
-    def name(self): return "interactive"
 
     @property
     def finished(self): return False
@@ -25,6 +24,7 @@ class InteractiveMode(Mode):
         self.latestp = self.instance.add(p)
 
 class StepMode(Mode):
+    NAME = "step"
     NPOINTS = 100
 
     def __init__(self, area):
@@ -32,9 +32,6 @@ class StepMode(Mode):
         self.instance = Melkman(
             SimplePolygonalChain.generate(self.area, self.NPOINTS)
         )
-
-    @property
-    def name(self): return "step"
 
     @property
     def finished(self): return (
@@ -46,6 +43,7 @@ class StepMode(Mode):
         self.latestp = self.instance.next()
 
 class TestMode(Mode):
+    NAME = "test"
     NPOINTS = 300
     CHECKS  = 5000
     SLICES  = 10
@@ -54,9 +52,6 @@ class TestMode(Mode):
         Mode.__init__(self, area)
         self.passed  = 0
         self.failed  = 0
-
-    @property
-    def name(self): return "test"
 
     @property
     def checks(self): return self.passed + self.failed
@@ -80,7 +75,7 @@ class TestMode(Mode):
 # * Step: a simple polygonal chain is generated.
 # * Test: algorithm robustness test.
 class ModePicker:
-    MODES = types.SimpleNamespace(
+    MODES = Table(
         interactive = InteractiveMode,
         step        = StepMode,
         test        = TestMode,
