@@ -126,8 +126,7 @@ class Melkman:
         del self.lst[i]
 
         # update indices
-        for i, p in enumerate(self.lst):
-            if i != p.index: p.index = i
+        for i, p in enumerate(self.lst): p.index = i
 
         # recompute convex hull
         self.iter = iter(self.lst)
