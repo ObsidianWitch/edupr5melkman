@@ -113,66 +113,53 @@ class Canvas(tk.Canvas):
         )
         self["background"] = "white"
 
-    def draw_circle(self, center, radius, bg_color, bd_color):
+    def draw_circle(self, center, radius, fill, activefill, outline):
         return self.create_oval(
             center.x - radius, center.y - radius,
             center.x + radius, center.y + radius,
-            fill    = bg_color,
-            outline = bd_color,
+            fill          = fill,
+            activefill    = activefill,
+            outline       = outline,
+            activeoutline = activefill,
         )
 
-    def resize_circle(self, tag, px):
-        x0, y0, x1, y1 = self.coords(tag)
-        self.coords(tag,
-            x0 - px, y0 - px,
-            x1 + px, y1 + px,
-        )
-
-    # Bind events to a circle and its associated items. The circle's tag is
-    # `tags[0]`. `tags[1:]` are the other items we want to bind to the same
-    # events as the circle.
-    # * Enter: increase the size of the circle
-    # * Leave: decrease the size of the circle
-    # * Right click: remove point associated with the circle
-    def bind_circle(self, p, *tags):
-        pass
-        circle_tag = tags[0]
-        for tag in tags:
-            self.tag_bind(tag, "<Enter>",
-                lambda *args: self.resize_circle(circle_tag,  2)
-            )
-            self.tag_bind(tag, "<Leave>",
-                lambda *args: self.resize_circle(circle_tag, -2)
-            )
-            self.tag_bind(tag, "<Button-3>",
+    # Bind events to multiple items.
+    # * Right click: remove the point associated with the items.
+    def bind_item(self, p, *ids):
+        for id in ids:
+            self.tag_bind(id, "<Button-3>",
                 lambda *args: self.controller.delete(p)
             )
 
     def draw_nodes(self, collection):
         latestp = self.controller.latestp
         for p in collection:
-            tag1 = self.draw_circle(
-                center   = p,
-                radius   = 10 if p != latestp else 12,
-                bg_color = "white",
-                bd_color = "red" if p != latestp else "magenta",
+            id1 = self.draw_circle(
+                center     = p,
+                radius     = 10 if p != latestp else 12,
+                fill       = "white",
+                activefill = "light slate blue",
+                outline    = "firebrick2" if p != latestp else "dark slate blue",
             )
-            tag2 = self.create_text(
+            id2 = self.create_text(
                 p.x, p.y,
-                text = str(p.index),
+                text       = str(p.index),
+                fill       = "gray15",
+                activefill = "light slate blue"
             )
-            self.bind_circle(p, tag1, tag2)
+            self.bind_item(p, id1, id2)
 
     def draw_dots(self, collection):
         latestp = self.controller.latestp
         for p in collection:
-            tag = self.draw_circle(
-                center   = p,
-                radius   = 2 if p != latestp else 4,
-                bg_color = "black" if p != latestp else "magenta",
-                bd_color = "black" if p != latestp else "magenta",
+            id = self.draw_circle(
+                center     = p,
+                radius     = 4 if p != latestp else 6,
+                fill       = "gray15" if p != latestp else "dark slate blue",
+                activefill = "light slate blue",
+                outline    = "gray15" if p != latestp else "dark slate blue",
             )
-            self.bind_circle(p, tag)
+            self.bind_item(p, id)
 
     def draw_edges(self, collection, color):
         for i, _ in enumerate(collection):
@@ -188,7 +175,7 @@ class Canvas(tk.Canvas):
     def update(self):
         self.delete("all")
         if self.controller.melkman is None: return
-        self.draw_edges(self.controller.lst, "black")
+        self.draw_edges(self.controller.lst, "gray15")
         self.draw_dots(self.controller.lst)
-        self.draw_edges(self.controller.hull, "red")
+        self.draw_edges(self.controller.hull, "firebrick2")
         self.draw_nodes(self.controller.hull)
