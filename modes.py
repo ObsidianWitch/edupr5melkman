@@ -114,5 +114,10 @@ class Controller:
     def select(self, mode):
         self.mode = mode(self.window)
 
+    def delete(self, p = None, i = None):
+        assert (i is not None) or (p is not None)
+        p = p or self.mode.melkman.lst[i]
+        self.mode.delete(p)
+
     def loop(self):
         self.window.mainloop()

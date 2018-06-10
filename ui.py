@@ -11,21 +11,37 @@ class Window(tk.Tk):
         top_frame = tk.Frame(self)
         top_frame.grid(row = 0, column = 0, sticky = tk.W)
 
-        menu_button = tk.Menubutton(top_frame,
+        new_menu = tk.Menubutton(top_frame,
             text   = "New",
             relief = tk.RAISED
         )
-        menu_button.grid(row = 0, column = 0, sticky = tk.N + tk.S + tk.E + tk.W)
-        menu_button.menu = tk.Menu(menu_button)
-        menu_button["menu"] = menu_button.menu
+        new_menu.grid(row = 0, column = 0, sticky = tk.N + tk.S + tk.E + tk.W)
+        new_menu.menu = tk.Menu(new_menu)
+        new_menu["menu"] = new_menu.menu
         for i, mode in enumerate(self.controller.MODES):
-            add_mode = lambda mode: menu_button.menu.add_command(
+            add_mode = lambda mode: new_menu.menu.add_command(
                 label   = mode.NAME,
                 command = lambda: self.select_mode(mode),
             ) ; add_mode(mode)
 
+        del_menu = tk.Menubutton(top_frame,
+            text   = "Del",
+            relief = tk.RAISED
+        )
+        del_menu.grid(row = 0, column = 1, sticky = tk.N + tk.S + tk.E + tk.W)
+        del_menu.menu = tk.Menu(del_menu)
+        del_menu["menu"] = del_menu.menu
+        del_menu.menu.add_command(
+            label   = "first",
+            command = lambda: self.controller.delete(i = 0),
+        )
+        del_menu.menu.add_command(
+            label   = "last",
+            command = lambda: self.controller.delete(i = -1),
+        )
+
         self.information = Information(top_frame, controller)
-        self.information.grid(row = 0, column = 1, sticky = tk.W)
+        self.information.grid(row = 0, column = 2, sticky = tk.W)
 
         self.canvas = Canvas(self, controller)
         self.canvas.grid(row = 1, column = 0)
