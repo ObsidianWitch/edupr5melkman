@@ -1,5 +1,6 @@
 import collections
 import tkinter as tk
+from tkinter import ttk
 
 class Window(tk.Tk):
     def __init__(self, controller):
@@ -12,40 +13,45 @@ class Window(tk.Tk):
         top_frame = tk.Frame(self)
         top_frame.grid(row = 0, column = 0, sticky = tk.W)
 
-        new_menu = tk.Menubutton(top_frame,
-            text   = "New",
-            relief = tk.RAISED
-        )
-        new_menu.grid(row = 0, column = 0, sticky = tk.N + tk.S + tk.E + tk.W)
-        new_menu.menu = tk.Menu(new_menu)
-        new_menu["menu"] = new_menu.menu
-        for i, mode in enumerate(self.controller.MODES):
-            add_mode = lambda mode: new_menu.menu.add_command(
-                label   = mode.name(),
-                command = lambda: self.select(mode),
-            ) ; add_mode(mode)
+        button_frame = tk.Frame(top_frame)
+        button_frame.grid(row = 0, column = 0, sticky = tk.W)
 
-        self.del_menu = tk.Menubutton(top_frame,
-            text   = "Del",
-            relief = tk.RAISED
+        # New buttons
+        for i, mode in enumerate(self.controller.MODES):
+            mode_button = lambda mode: tk.Button(button_frame,
+                text    = mode.name(),
+                relief  = tk.RAISED,
+                command = lambda: self.select(mode),
+            ).grid(row = 0, column = i, sticky = tk.W)
+            mode_button(mode)
+
+        # Delete buttons
+        self.del_frame = tk.Frame(button_frame)
+        self.del_frame.grid(row = 0, column = 4, sticky = tk.W)
+        self.del_frame.show = lambda: self.del_frame.grid(
+            row = 0, column = 4, sticky = tk.W
         )
-        self.del_menu.show = lambda: self.del_menu.grid(
-            row = 0, column = 1, sticky = tk.N + tk.S + tk.E + tk.W
+        self.del_frame.hide = self.del_frame.grid_forget
+        self.del_frame.show()
+
+        ttk.Separator(self.del_frame, orient = tk.VERTICAL).grid(
+            row = 0, column = 0,
+            sticky = tk.W + tk.N + tk.S,
+            padx = 10, pady = 5
         )
-        self.del_menu.show()
-        self.del_menu.menu = tk.Menu(self.del_menu)
-        self.del_menu["menu"] = self.del_menu.menu
-        self.del_menu.menu.add_command(
-            label   = "first",
+        tk.Button(self.del_frame,
+            text    = "delete first",
+            relief  = tk.RAISED,
             command = lambda: self.controller.delete(i = 0),
-        )
-        self.del_menu.menu.add_command(
-            label   = "last",
+        ).grid(row = 0, column = 1, sticky = tk.W)
+        tk.Button(self.del_frame,
+            text    = "delete last",
+            relief  = tk.RAISED,
             command = lambda: self.controller.delete(i = -1),
-        )
+        ).grid(row = 0, column = 2, sticky = tk.W)
 
         self.information = Information(top_frame, controller)
-        self.information.grid(row = 0, column = 2, sticky = tk.W)
+        self.information.grid(row = 1, column = 0, sticky = tk.W)
 
         self.canvas = Canvas(self, controller)
         self.canvas.grid(row = 1, column = 0)
@@ -57,9 +63,9 @@ class Window(tk.Tk):
         self.controller.select(mode)
 
         if mode == self.controller.MODES.test:
-            self.del_menu.grid_forget()
+            self.del_frame.hide()
         else:
-            self.del_menu.show()
+            self.del_frame.show()
 
     def update(self):
         self.information.update()
