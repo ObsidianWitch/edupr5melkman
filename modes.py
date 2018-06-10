@@ -65,6 +65,7 @@ class Test(Mode):
         Mode.__init__(self, window)
         self.passed  = 0
         self.failed  = 0
+        self.cancel  = False
 
     @property
     def checks(self): return self.passed + self.failed
@@ -76,7 +77,7 @@ class Test(Mode):
     def finished(self): return self.checks >= self.CHECKS
 
     def next(self, *args):
-        while not self.finished:
+        while not self.finished and not self.cancel:
             self.melkman = Melkman(
                 SimplePolygonalChain.generate(self.area, self.NPOINTS)
             )
@@ -104,6 +105,7 @@ class Controller:
         self.window = ui.Window(self)
         self.mode = Interactive(self.window)
         self.window.update()
+        self.window.protocol('WM_DELETE_WINDOW', self.exit)
 
     # Expose mode and model attributes.
     def __getattr__(self, key):
@@ -112,6 +114,7 @@ class Controller:
         return value
 
     def select(self, mode):
+        self.mode.cancel = True
         self.mode = mode(self.window)
         self.window.update()
 
@@ -122,3 +125,7 @@ class Controller:
 
     def loop(self):
         self.window.mainloop()
+
+    def exit(self):
+        self.mode.cancel = True
+        self.window.destroy()
