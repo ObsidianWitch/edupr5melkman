@@ -27,6 +27,11 @@ class Interactive(Mode):
 
     def next(self, p):
         self.latestp = self.melkman.add(p)
+        self.window.update()
+
+    def delete(self, p):
+        self.melkman.delete(p)
+        self.window.update()
 
 class Step(Mode):
     NAME = "step"
@@ -46,6 +51,9 @@ class Step(Mode):
 
     def next(self, *args):
         self.latestp = self.melkman.next()
+        self.window.update()
+
+    def delete(self, p): pass
 
 class Test(Mode):
     NAME = "test"
@@ -62,18 +70,23 @@ class Test(Mode):
     def checks(self): return self.passed + self.failed
 
     @property
+    def slice(self): return (self.checks % self.SLICES == 0)
+
+    @property
     def finished(self): return self.checks >= self.CHECKS
 
     def next(self, *args):
-        for _ in range(self.SLICES):
-            if self.finished: return False
+        while not self.finished:
             self.melkman = Melkman(
                 SimplePolygonalChain.generate(self.area, self.NPOINTS)
             )
             self.melkman.run()
-            if self.melkman.check(): self.passed += 1
+            if self.melkman.check():
+                self.passed += 1
+                if self.slice: self.window.update()
             else: self.failed += 1 ; return False
-        return True
+
+    def delete(self, p): pass
 
 # Controller allowing to switch between modes to manipulate the melkman
 # algorithm.
@@ -100,13 +113,6 @@ class Controller:
 
     def select(self, mode):
         self.mode = mode(self.window)
-
-    def next(self, p):
-        def process():
-            loop = self.mode.next(p)
-            self.window.update()
-            return loop
-        while process(): pass
 
     def loop(self):
         self.window.mainloop()

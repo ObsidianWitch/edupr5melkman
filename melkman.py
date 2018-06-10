@@ -15,22 +15,33 @@ class SimplePolygonalChain:
                 random.randrange(area.y, area.height),
                 index = len(lst),
             )
-            if cls.verify(lst, p): lst.append(p)
+            if cls.check_1(lst, p): lst.append(p)
         return lst
 
-    # Given `lst`, a simple polygonal chain, verify if the property is still
-    # true for `lst U {p}`.
+    # Given `spc`, a simple polygonal chain, check if the property is still
+    # true for `spc U {p}`.
     # Complexity: O(n)
     @classmethod
-    def verify(cls, lst, p):
-        if len(lst) <= 1: return True
-        for i, _ in enumerate(lst):
-            if i == len(lst) - 1: break
+    def check_1(cls, spc, p):
+        if len(spc) <= 1: return True
+        for i, _ in enumerate(spc):
+            if i == len(spc) - 1: break
             if V2.intersection(
-                a = lst[i],  b = lst[i + 1],
-                c = lst[-1], d = p,
+                a = spc[i],  b = spc[i + 1],
+                c = spc[-1], d = p,
             ): return False
         return True
+
+    # Given two simple polygonal chains, check if the property is still true
+    # for `spc1 U spc2`.
+    # The test is equivalent to the following:
+    # with `a = spc1[-1]` and `b = spc2[0]`, check the [ab] line segment
+    # against all line segments from `spc1` and `spc2`.
+    # Complexity: O(n)
+    @classmethod
+    def check_n(cls, spc1, spc2):
+        return cls.check_1(spc1, spc2[0]) \
+           and cls.check_1(spc2[::-1], spc1[-1])
 
 class Melkman:
     # Initializes the algorithm with a simple polygonal chain `lst`. If `lst`
@@ -87,7 +98,7 @@ class Melkman:
             self.hull.extend(hull)
 
         p = V2(p, index = len(self.lst))
-        if not SimplePolygonalChain.verify(self.lst, p): return
+        if not SimplePolygonalChain.check_1(self.lst, p): return
 
         # Initialize hull
         if len(self.hull) == 0: init(p)
@@ -97,6 +108,31 @@ class Melkman:
             self.step(p)
 
         return self.lst[-1]
+
+    # Delete a point from `self.lst`. It can only be deleted if `self.lst \ {p}`
+    # is a simple polygonal chain. If p is at one end of `self.lst`, we can
+    # remove it without reverifying the simple polygonal chain property. If `p`
+    # is successfully removed, recompute the convex hull.
+    def delete(self, p):
+        def at_end(): return (i == 0 or i == len(self.lst) - 1)
+        def is_spc(): return SimplePolygonalChain.check_n(
+            self.lst[0 : i], self.lst[i + 1 :]
+        )
+
+        i = p.index
+
+        # check simple polygonal chain
+        if (not at_end()) and (not is_spc()): return
+        del self.lst[i]
+
+        # update indices
+        for i, p in enumerate(self.lst):
+            if i != p.index: p.index = i
+
+        # recompute convex hull
+        self.iter = iter(self.lst)
+        self.hull = collections.deque()
+        if len(self.lst) >= 3: self.run()
 
     # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
     # contributes to the convex hull. The `self.rotation` property must be

@@ -134,7 +134,7 @@ class Canvas(tk.Canvas):
                 lambda *args: self.resize_circle(circle_tag, -2)
             )
             self.tag_bind(tag, "<Button-3>",
-                lambda *args: print(p)
+                lambda *args: self.controller.delete(p)
             )
 
     def draw_nodes(self, collection):
