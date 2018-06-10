@@ -107,36 +107,64 @@ class Canvas(tk.Canvas):
         self["background"] = "white"
 
     def draw_circle(self, center, radius, bg_color, bd_color):
-        self.create_oval(
+        return self.create_oval(
             center.x - radius, center.y - radius,
             center.x + radius, center.y + radius,
             fill    = bg_color,
             outline = bd_color,
         )
 
+    def resize_circle(self, tag, px):
+        x0, y0, x1, y1 = self.coords(tag)
+        self.coords(tag,
+            x0 - px, y0 - px,
+            x1 + px, y1 + px,
+        )
+
+    # Bind events to a circle and its associated items. The circle's tag is
+    # `tags[0]`. `tags[1:]` are the other items we want to bind to the same
+    # events as the circle.
+    # * Enter: increase the size of the circle
+    # * Leave: decrease the size of the circle
+    # * Right click: remove point associated with the circle
+    def bind_circle(self, p, *tags):
+        circle_tag = tags[0]
+        for tag in tags:
+            self.tag_bind(tag, "<Enter>",
+                lambda *args: self.resize_circle(circle_tag,  2)
+            )
+            self.tag_bind(tag, "<Leave>",
+                lambda *args: self.resize_circle(circle_tag, -2)
+            )
+            self.tag_bind(tag, "<Button-3>",
+                lambda *args: print(p)
+            )
+
     def draw_nodes(self, collection):
         latestp = self.melkman.latestp
         for p in collection:
-            self.draw_circle(
+            tag1 = self.draw_circle(
                 center   = p,
                 radius   = 10 if p != latestp else 12,
                 bg_color = "white",
                 bd_color = "red" if p != latestp else "magenta",
             )
-            self.create_text(
+            tag2 = self.create_text(
                 p.x, p.y,
                 text = str(p.index),
             )
+            self.bind_circle(p, tag1, tag2)
 
     def draw_dots(self, collection):
         latestp = self.melkman.latestp
         for p in collection:
-            self.draw_circle(
+            tag = self.draw_circle(
                 center   = p,
                 radius   = 2 if p != latestp else 4,
                 bg_color = "black" if p != latestp else "magenta",
                 bd_color = "black" if p != latestp else "magenta",
             )
+            self.bind_circle(p, tag)
 
     def draw_edges(self, collection, color):
         for i, _ in enumerate(collection):
