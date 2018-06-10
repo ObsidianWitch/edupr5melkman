@@ -21,7 +21,7 @@ class Window(tk.Tk):
         for i, mode in enumerate(self.controller.MODES):
             add_mode = lambda mode: new_menu.menu.add_command(
                 label   = mode.NAME,
-                command = lambda: self.select_mode(mode),
+                command = lambda: self.controller.select(mode),
             ) ; add_mode(mode)
 
         del_menu = tk.Menubutton(top_frame,
@@ -45,14 +45,9 @@ class Window(tk.Tk):
 
         self.canvas = Canvas(self, controller)
         self.canvas.grid(row = 1, column = 0)
-        self.canvas.bind("<Button-1>", self.add_click)
-
-    def select_mode(self, mode):
-        self.controller.select(mode)
-        self.update()
-
-    def add_click(self, event):
-        self.controller.next((event.x, event.y))
+        self.canvas.bind("<Button-1>",
+            lambda event: self.controller.next((event.x, event.y))
+        )
 
     def update(self):
         self.information.update()

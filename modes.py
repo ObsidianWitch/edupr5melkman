@@ -113,6 +113,7 @@ class Controller:
 
     def select(self, mode):
         self.mode = mode(self.window)
+        self.window.update()
 
     def delete(self, p = None, i = None):
         assert (i is not None) or (p is not None)
