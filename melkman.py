@@ -1,5 +1,6 @@
 import random
 import collections
+from utils import Table, Iter
 from vector import V2
 
 class SimplePolygonalChain:
@@ -43,50 +44,63 @@ class SimplePolygonalChain:
         return cls.check_1(spc1, spc2[0]) \
            and cls.check_1(spc2[::-1], spc1[-1])
 
+class History(collections.deque):
+    def __init__(self): collections.deque.__init__(self)
+
+    # Add a new history entry.
+    def new(self): self.append([])
+
+    # Adds a new element to the latest entry. We save the `point` and the `side`
+    # where this elements was when it was poped from its deque (-1 for left or
+    # 1 for right).
+    def insert(self, side, point): self[-1].append(Table(
+        side  = side,
+        point = point,
+    ))
+
+    def rewind(self):
+        if self: return self.pop()
+
 class Melkman:
     # Initializes the algorithm with a simple polygonal chain `lst`. If `lst`
     # is empty, points can be added later.
     def __init__(self, lst):
         self.lst = lst
-        self.iter = iter(self.lst)
+        self.iter = Iter(self.lst)
         self.hull = collections.deque()
+        self.history = History()
 
     # Process all points from `self.lst`.
     # Complexity: O(n)
     def run(self):
-        while self.next(): pass
+        while not self.iter.finished: self.next()
 
     # Process the next point from `self.lst`.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
-    # Returns the latest processed point.
     # Complexity: O(1)
     def next(self):
         def init(i = 0):
             hull = (self.lst[i + 2], self.lst[0],
                     self.lst[i + 1], self.lst[i + 2])
             self.rotation = V2.rotation(*hull[1:])
-            if self.rotation == 0: return init(i + 1)
+            if self.rotation == 0: init(i + 1)
             else:
                 self.hull.extend(hull)
-                for _ in range(i + 3): next(self.iter, None)
-                return self.hull[-1]
+                self.iter.i = i + 2
 
         # Initialize hull
         if len(self.hull) == 0: return init()
 
         # Update hull
-        p = next(self.iter, None)
+        p = self.iter.next()
         if p is None: return # finished
         self.step(p)
-
-        return p
 
     # Add a new point `p` to `self.lst` if `self.lst U {p}` satisfies the
     # simple polygonal chain property.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
-    # Returns the latest processed point.
     # Complexity: O(n)
     def add(self, p):
         def init(p):
@@ -107,35 +121,47 @@ class Melkman:
             self.lst.append(p)
             self.step(p)
 
-        return self.lst[-1]
+        self.iter.next()
 
     # Delete a point from `self.lst`. It can only be deleted if `self.lst \ {p}`
     # is a simple polygonal chain. If p is at one end of `self.lst`, we can
     # remove it without reverifying the simple polygonal chain property. If `p`
     # is successfully removed, recompute the convex hull.
-    def delete(self, p):
-        def at_end(): return (i == 0 or i == len(self.lst) - 1)
+    def delete(self, i):
+        def at_end(): return (i == 0 or i == len(self.lst) - 1 or i == -1)
         def is_spc(): return SimplePolygonalChain.check_n(
             self.lst[0 : i], self.lst[i + 1 :]
         )
 
-        i = p.index
+        p = self.lst[i]
 
         # check simple polygonal chain
         if (not at_end()) and (not is_spc()): return
         del self.lst[i]
 
         # update indices
-        for i, p in enumerate(self.lst): p.index = i
+        for j, p in enumerate(self.lst): p.index = j
 
         # recompute convex hull
-        self.iter = iter(self.lst)
+        self.iter = Iter(self.lst)
         self.hull = collections.deque()
         if len(self.lst) >= 3: self.run()
+
+    def rewind(self):
+        actions = self.history.rewind()
+        # if not actions: return self.iter.prev() if self.history else None
+        if not actions: return self.iter.prev()
+        self.hull.pop()
+        self.hull.popleft()
+        self.iter.prev()
+        for a in actions[::-1]:
+            if   a.side == -1: self.hull.appendleft(a.point)
+            elif a.side ==  1: self.hull.append(a.point)
 
     # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
     # contributes to the convex hull. The `self.rotation` property must be
     # satisfied at each step of the algorithm.
+    # Deleted points are saved in `self.history`.
     # Complexity: O(1)
     def step(self, p):
         def rotstart(): return V2.rotation(
@@ -145,9 +171,16 @@ class Melkman:
             self.hull[-2], self.hull[-1], p
         ) == self.rotation
 
+        self.history.append([])
         if rotstart() and rotend(): return
-        while not rotstart(): self.hull.popleft()
-        while not rotend(): self.hull.pop()
+        while not rotstart(): self.history.insert(
+            side  = -1,
+            point = self.hull.popleft(),
+        )
+        while not rotend(): self.history.insert(
+            side  = 1,
+            point = self.hull.pop(),
+        )
 
         self.hull.appendleft(p)
         self.hull.append(p)

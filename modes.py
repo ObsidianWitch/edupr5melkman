@@ -5,8 +5,10 @@ from melkman import *
 class Mode:
     def __init__(self, window):
         self.window = window
-        self.latestp = None
         self.melkman = None
+
+    @property
+    def latestp(self): return self.melkman.iter.current
 
     @property
     def area(self): return Table(
@@ -26,11 +28,11 @@ class Interactive(Mode):
     def finished(self): return False
 
     def next(self, p):
-        self.latestp = self.melkman.add(p)
+        self.melkman.add(p)
         self.window.update()
 
-    def delete(self, p):
-        self.melkman.delete(p)
+    def delete(self, i):
+        self.melkman.delete(i)
         self.window.update()
 
 class Step(Mode):
@@ -44,16 +46,16 @@ class Step(Mode):
         )
 
     @property
-    def finished(self): return (
-        self.melkman.hull
-        and (not self.latestp)
-    )
+    def finished(self): return self.melkman.iter.finished
 
     def next(self, *args):
-        self.latestp = self.melkman.next()
+        self.melkman.next()
         self.window.update()
 
-    def delete(self, p): pass
+    def delete(self, i):
+        if   i ==  0: print("not yet implemented")
+        elif i == -1: self.melkman.rewind()
+        self.window.update()
 
 class Test(Mode):
     NAME = "test"
@@ -87,7 +89,7 @@ class Test(Mode):
                 if self.slice: self.window.update()
             else: self.failed += 1 ; return False
 
-    def delete(self, p): pass
+    def delete(self, i): pass
 
 # Controller allowing to switch between modes to manipulate the melkman
 # algorithm.
@@ -121,8 +123,8 @@ class Controller:
     def delete(self, p = None, i = None):
         assert (i is not None) or (p is not None)
         if not self.mode.melkman.lst: return
-        p = p or self.mode.melkman.lst[i]
-        self.mode.delete(p)
+        if i is None: i = p.index
+        self.mode.delete(i)
 
     def loop(self):
         self.window.mainloop()
