@@ -120,6 +120,7 @@ class Controller:
 
     def delete(self, p = None, i = None):
         assert (i is not None) or (p is not None)
+        if not self.mode.melkman.lst: return
         p = p or self.mode.melkman.lst[i]
         self.mode.delete(p)
 
