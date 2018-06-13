@@ -62,7 +62,9 @@ class Step(Mode):
         self.window.update()
 
     def delete_first(self):
-        if not self.m2.hull: self.m1, self.m2 = self.m1.split()
+        if not self.m2.hull:
+            if not self.m1.hull: return
+            self.m1, self.m2 = self.m1.split()
         self.m2.rewind()
 
     def delete_last(self): self.m1.rewind()

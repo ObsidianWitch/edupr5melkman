@@ -8,18 +8,17 @@ class History(collections.deque):
     def __init__(self): collections.deque.__init__(self)
 
     # Add a new history entry.
-    def new(self): self.append([])
-
-    # Adds a new element to the latest entry. We save the `point` and the `side`
-    # where this elements was when it was poped from its deque (-1 for left or
-    # 1 for right).
-    def insert(self, side, point): self[-1].append(Table(
-        side  = side,
-        point = point,
+    def new(self, index): self.append(Table(
+        index = index - 1,
+        left  = [],
+        right = [],
     ))
 
-    def rewind(self):
-        if self: return self.pop()
+    def insert_left(self, p): self[-1].left.append(p)
+
+    def insert_right(self, p): self[-1].right.append(p)
+
+    def rewind(self): return self.pop() if self else None
 
 class Melkman:
     # Initializes the algorithm with a simple polygonal chain `lst`. If `lst`
@@ -37,12 +36,8 @@ class Melkman:
 
     def init(self):
         p = self.iter.current
-        if self.hull:
-            self.history.new()
-            self.history.insert(
-                side  = -1,
-                point = self.hull.popleft(),
-            )
+        self.history.new(index = self.iter.i)
+        if self.hull: self.history.insert_left(self.hull.popleft())
         self.hull.appendleft(p)
         self.hull.append(p)
         if len(self.hull) < 4: return
@@ -110,15 +105,14 @@ class Melkman:
         self.run()
 
     def rewind(self):
-        actions = self.history.rewind() or ()
-        self.iter.prev()
-        if actions or (len(self.hull) == 2):
-            self.hull.pop()
-            self.hull.popleft()
+        actions = self.history.rewind()
+        if not actions: return
 
-        for a in actions[::-1]:
-            if   a.side == -1: self.hull.appendleft(a.point)
-            elif a.side ==  1: self.hull.append(a.point)
+        self.iter.i = actions.index
+        self.hull.pop()
+        self.hull.popleft()
+        for p in actions.left[::-1]:  self.hull.appendleft(p)
+        for p in actions.right[::-1]: self.hull.append(p)
 
     # TODO doc
     def split(self):
@@ -162,15 +156,13 @@ class Melkman:
             self.hull[-2], self.hull[-1], p
         ) == self.rotation
 
-        self.history.append([])
         if rotstart() and rotend(): return
-        while not rotstart(): self.history.insert(
-            side  = -1,
-            point = self.hull.popleft(),
+        self.history.new(index = self.iter.i)
+        while not rotstart(): self.history.insert_left(
+            self.hull.popleft()
         )
-        while not rotend(): self.history.insert(
-            side  = 1,
-            point = self.hull.pop(),
+        while not rotend(): self.history.insert_right(
+            self.hull.pop(),
         )
 
         self.hull.appendleft(p)
@@ -191,6 +183,6 @@ class Melkman:
                 if (r != self.rotation) and (r != 0): return False
         return True
 
-    def __repr__(self): return " ".join(
+    def __repr__(self): return ", ".join(
         str(p.index) for p in self.hull
-    )
+    ) if self.hull else "∅"

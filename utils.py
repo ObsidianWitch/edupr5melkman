@@ -10,17 +10,18 @@ class Iter:
         self.collection = collection
         self.i = -1
 
-    def processed(self, reverse = False):
-        return self.collection[0 : self.i + 1] if not reverse \
-          else self.collection[self.i :: -1]
+    @property
+    def j(self): return self.i if self.i > -1 else 0
 
-    def remaining(self): return self.collection[self.i + 1 :]
+    def processed(self, reverse = False):
+        return self.collection[0 : self.j + 1] if not reverse \
+          else self.collection[self.j :: -1]
+
+    def remaining(self): return self.collection[self.j + 1 :]
 
     @property
     def current(self):
-        if self.collection:
-            if self.i == -1: return self.collection[0]
-            else:            return self.collection[self.i]
+        if self.collection: return self.collection[self.j]
 
     @property
     def finished(self): return (self.i == len(self.collection) - 1)
@@ -28,9 +29,4 @@ class Iter:
     def next(self):
         if self.i + 1 < len(self.collection):
             self.i += 1
-            return self.collection[self.i]
-
-    def prev(self):
-        if self.i - 1 >= -1:
-            self.i -= 1
             return self.collection[self.i]

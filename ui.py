@@ -89,25 +89,25 @@ class Information(tk.Frame):
 
         self.state_label["text"] = " | ".join(txt)
 
-    def hull_str(self, hull):
+    def hull_str(self, melkman):
         if not hull: return "∅"
-        else: return  ", ".join(
-            str(p.index) for p in hull
-        )
+        else: return melkman
 
-    def update_hulls(self, *instances):
-        txt = []
-        for i, melkman in enumerate(instances):
-            if melkman is None: continue
-            txt.append(f"h{i + 1}: {self.hull_str(melkman.hull)}")
-        self.hull_label["text"] = "\n".join(txt)
+    def update_hulls(self):
+        def helper(melkman, i):
+            hull_str = str(melkman) if melkman else "∅"
+            return f"h{i}: {hull_str}"
+
+        m0 = self.controller.melkman
+        m1 = self.controller.m1
+        m2 = self.controller.m2
+
+        self.hull_label["text"] = "\n".join((
+            helper(m1, 1), helper(m2, 2)
+        )) if m1 else helper(m0, 0)
 
     def update(self):
-        self.update_hulls(
-            self.controller.melkman,
-            self.controller.m1,
-            self.controller.m2,
-        )
+        self.update_hulls()
         self.update_state()
 
 class Canvas(tk.Canvas):
