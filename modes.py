@@ -1,6 +1,7 @@
 import ui
 from utils import Table
-from melkman import *
+from melkman import Melkman
+from spc import SimplePolygonalChain as SPC
 
 class Mode:
     def __init__(self, window):
@@ -41,9 +42,9 @@ class Step(Mode):
 
     def __init__(self, window):
         Mode.__init__(self, window)
-        self.melkman = Melkman(
-            SimplePolygonalChain.generate(self.area, self.NPOINTS)
-        )
+        self.melkman = Melkman(SPC.generate(
+            self.area, self.NPOINTS
+        ))
 
     @property
     def finished(self): return self.melkman.iter.finished
@@ -80,9 +81,9 @@ class Test(Mode):
 
     def next(self, *args):
         while not self.finished and not self.cancel:
-            self.melkman = Melkman(
-                SimplePolygonalChain.generate(self.area, self.NPOINTS)
-            )
+            self.melkman = Melkman(SPC.generate(
+                self.area, self.NPOINTS
+            ))
             self.melkman.run()
             if self.melkman.check():
                 self.passed += 1

@@ -1,48 +1,7 @@
-import random
 import collections
 from utils import Table, Iter
 from vector import V2
-
-class SimplePolygonalChain:
-    # Generate a simple polygonal chain containing at most `n` points and
-    # restricted to `area`.
-    # Complexity: O(n^2)
-    @classmethod
-    def generate(cls, area, n):
-        lst = []
-        for _ in range(n):
-            p = V2(
-                random.randrange(area.x, area.width),
-                random.randrange(area.y, area.height),
-                index = len(lst),
-            )
-            if cls.check_1(lst, p): lst.append(p)
-        return lst
-
-    # Given `spc`, a simple polygonal chain, check if the property is still
-    # true for `spc U {p}`.
-    # Complexity: O(n)
-    @classmethod
-    def check_1(cls, spc, p):
-        if len(spc) <= 1: return True
-        for i, _ in enumerate(spc):
-            if i == len(spc) - 1: break
-            if V2.intersection(
-                a = spc[i],  b = spc[i + 1],
-                c = spc[-1], d = p,
-            ): return False
-        return True
-
-    # Given two simple polygonal chains, check if the property is still true
-    # for `spc1 U spc2`.
-    # The test is equivalent to the following:
-    # with `a = spc1[-1]` and `b = spc2[0]`, check the [ab] line segment
-    # against all line segments from `spc1` and `spc2`.
-    # Complexity: O(n)
-    @classmethod
-    def check_n(cls, spc1, spc2):
-        return cls.check_1(spc1, spc2[0]) \
-           and cls.check_1(spc2[::-1], spc1[-1])
+from spc import SimplePolygonalChain as SPC
 
 class History(collections.deque):
     def __init__(self): collections.deque.__init__(self)
@@ -75,11 +34,6 @@ class Melkman:
     def initialized(self): return (len(self.hull) >= 4) \
                               and (self.rotation != 0)
 
-    # Process all points from `self.lst`.
-    # Complexity: O(n)
-    def run(self):
-        while not self.iter.finished: self.next()
-
     def init(self):
         p = self.iter.current
         if self.hull:
@@ -95,6 +49,11 @@ class Melkman:
         self.rotation = V2.rotation(
             self.hull[1], self.hull[-2], self.hull[-1]
         )
+
+    # Process all points from `self.lst`.
+    # Complexity: O(n)
+    def run(self):
+        while not self.iter.finished: self.next()
 
     # Process the next point from `self.lst`.
     # Then, execute one step of the Melkman algorithm to decide whether to add
@@ -115,7 +74,7 @@ class Melkman:
     # Complexity: O(n)
     def add(self, p):
         p = V2(p, index = len(self.lst))
-        if not SimplePolygonalChain.check_1(self.lst, p): return
+        if not SPC.check_1(self.lst, p): return
         self.lst.append(p)
         self.iter.next()
 
@@ -130,7 +89,7 @@ class Melkman:
     # is successfully removed, recompute the convex hull.
     def delete(self, i):
         def at_end(): return (i == 0 or i == len(self.lst) - 1 or i == -1)
-        def is_spc(): return SimplePolygonalChain.check_n(
+        def is_spc(): return SPC.check_n(
             self.lst[0 : i], self.lst[i + 1 :]
         )
 
