@@ -31,8 +31,8 @@ class SimplePolygonalChain:
             ): return False
         return True
 
-    # Given two simple polygonal chains, check if the property is still true
-    # for `spc1 U spc2`.
+    # Given one spc splitted into two spc (`spc1` and `spc2`) by removing one
+    # point, Check if the property is still true for `spc1 U spc2`.
     # The test is equivalent to the following:
     # with `a = spc1[-1]` and `b = spc2[0]`, check the [ab] line segment
     # against all line segments from `spc1` and `spc2`.

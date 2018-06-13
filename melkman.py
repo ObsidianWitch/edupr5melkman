@@ -1,4 +1,5 @@
 import collections
+import itertools
 from utils import Table, Iter
 from vector import V2
 from spc import SimplePolygonalChain as SPC
@@ -60,6 +61,7 @@ class Melkman:
     # this point to `self.hull` or not.
     # Complexity: O(1)
     def next(self):
+        if self.iter.finished: return
         p = self.iter.next()
 
         # Initialize hull
@@ -93,6 +95,7 @@ class Melkman:
             self.lst[0 : i], self.lst[i + 1 :]
         )
 
+        if not self.lst: return
         p = self.lst[i]
 
         # check simple polygonal chain
@@ -116,6 +119,35 @@ class Melkman:
         for a in actions[::-1]:
             if   a.side == -1: self.hull.appendleft(a.point)
             elif a.side ==  1: self.hull.append(a.point)
+
+    # TODO doc
+    def split(self):
+        cls = self.__class__
+        m1 = cls(self.iter.remaining())
+        m2 = cls(self.iter.processed(reverse = True))
+        m2.run()
+        return m1, m2
+
+    # TODO use
+    # TODO doc
+    # brute force method
+    # given 2 convex hulls of respective size l and m
+    # complexity: o(l^2 + m^2)
+    def bridge(self, other):
+        h1, h2 = self.hull, other
+        def is_tangent(a, b):
+            side = 0
+            for p in itertools.chain(h1, h2):
+                rot_abp = V2.rotation(a, b, p)
+                if side == 0: side = rot_abp
+                elif (rot_abp != side) and (rot_abp != 0): return False
+            return True
+
+        tangents = []
+        for a, b in itertools.product(h1, h2):
+            if is_tangent(a, b): tangents.append((a, b))
+            if len(tangents) >= 2: break
+        return tangents
 
     # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
     # contributes to the convex hull. The `self.rotation` property must be
@@ -144,10 +176,6 @@ class Melkman:
         self.hull.appendleft(p)
         self.hull.append(p)
 
-    def __repr__(self): return " ".join(
-        str(p.index) for p in self.hull
-    )
-
     # Once the algorithm has processed the whole `self.lst`, this method can
     # check the validity of the convex hull.
     # For each edge [AB] in the hull, for every point P from `self.lst`,
@@ -162,3 +190,7 @@ class Melkman:
                 r = V2.rotation(a, b, p)
                 if (r != self.rotation) and (r != 0): return False
         return True
+
+    def __repr__(self): return " ".join(
+        str(p.index) for p in self.hull
+    )

@@ -10,6 +10,12 @@ class Iter:
         self.collection = collection
         self.i = -1
 
+    def processed(self, reverse = False):
+        return self.collection[0 : self.i + 1] if not reverse \
+          else self.collection[self.i :: -1]
+
+    def remaining(self): return self.collection[self.i + 1 :]
+
     @property
     def current(self):
         if self.collection:

@@ -1,3 +1,4 @@
+import collections
 import tkinter as tk
 
 class Window(tk.Tk):
@@ -76,10 +77,7 @@ class Information(tk.Frame):
         txt = []
         txt.append(f"Mode: {self.controller.NAME}")
 
-        if self.controller.melkman is not None: txt.append(
-            f"Points: {len(self.controller.lst)}"
-        )
-        else: txt.append("Points: 0")
+        txt.append(f"Points: {len(self.controller.mode)}")
 
         if self.controller.checks is not None: txt.append(
             f"Checks: ✓ {self.controller.passed}"
@@ -91,17 +89,26 @@ class Information(tk.Frame):
 
         self.state_label["text"] = " | ".join(txt)
 
-    def update_hull(self):
-        txt = "hull: "
-        if not self.controller.hull: txt += "∅"
-        else: txt += ", ".join((
-            str(p.index) for p in self.controller.hull
-        ))
-        self.hull_label["text"] = txt
+    def hull_str(self, hull):
+        if not hull: return "∅"
+        else: return  ", ".join(
+            str(p.index) for p in hull
+        )
+
+    def update_hulls(self, *instances):
+        txt = []
+        for i, melkman in enumerate(instances):
+            if melkman is None: continue
+            txt.append(f"h{i + 1}: {self.hull_str(melkman.hull)}")
+        self.hull_label["text"] = "\n".join(txt)
 
     def update(self):
+        self.update_hulls(
+            self.controller.melkman,
+            self.controller.m1,
+            self.controller.m2,
+        )
         self.update_state()
-        self.update_hull()
 
 class Canvas(tk.Canvas):
     def __init__(self, parent, controller):
@@ -154,14 +161,14 @@ class Canvas(tk.Canvas):
         for p in collection:
             id = self.draw_circle(
                 center     = p,
-                radius     = 4 if p != latestp else 6,
+                radius     = 3 if p != latestp else 5,
                 fill       = "gray15" if p != latestp else "dark slate blue",
                 activefill = "light slate blue",
                 outline    = "gray15" if p != latestp else "dark slate blue",
             )
             self.bind_item(p, id)
 
-    def draw_edges(self, collection, color):
+    def draw_edges(self, collection, color, width = 1, dash = None):
         for i, _ in enumerate(collection):
             if i == len(collection) - 1: return
             p1 = collection[i]
@@ -169,13 +176,23 @@ class Canvas(tk.Canvas):
             self.create_line(
                 p1.x, p1.y,
                 p2.x, p2.y,
-                fill = color,
+                fill  = color,
+                width = width,
+                dash = dash,
             )
+
+    def draw(self, melkman):
+        self.draw_edges(melkman.lst, "gray15", dash = (5, 5))
+        self.draw_dots(melkman.lst)
+        self.draw_edges(melkman.hull, "red", width = 2)
+        self.draw_nodes(melkman.hull)
 
     def update(self):
         self.delete("all")
-        if self.controller.melkman is None: return
-        self.draw_edges(self.controller.lst, "gray15")
-        self.draw_dots(self.controller.lst)
-        self.draw_edges(self.controller.hull, "firebrick2")
-        self.draw_nodes(self.controller.hull)
+
+        for melkman in (
+            self.controller.melkman,
+            self.controller.m1,
+            self.controller.m2,
+        ):
+            if melkman is not None: self.draw(melkman)

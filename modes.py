@@ -5,7 +5,7 @@ from spc import SimplePolygonalChain as SPC
 
 class Mode:
     def __init__(self, window):
-        self.window = window
+        self.window  = window
         self.melkman = None
 
     @property
@@ -17,6 +17,10 @@ class Mode:
         width  =  self.window.canvas.winfo_width(),
         height =  self.window.canvas.winfo_height(),
     )
+
+    def __len__(self):
+        if self.melkman is None: return 0
+        else: return len(self.melkman.lst)
 
 class Interactive(Mode):
     NAME = "interactive"
@@ -42,20 +46,31 @@ class Step(Mode):
 
     def __init__(self, window):
         Mode.__init__(self, window)
-        self.melkman = Melkman(SPC.generate(
-            self.area, self.NPOINTS
-        ))
+        spc = SPC.generate(self.area, self.NPOINTS)
+        self.melkman = Melkman(spc)
+        self.m1 = Melkman(spc)
+        self.m2 = Melkman([])
 
     @property
-    def finished(self): return self.melkman.iter.finished
+    def latestp(self): return self.m1.iter.current
+
+    @property
+    def finished(self): return self.m1.iter.finished
 
     def next(self, *args):
-        self.melkman.next()
+        self.m1.next()
         self.window.update()
 
+    def delete_first(self):
+        if not self.m2.hull: self.m1, self.m2 = self.m1.split()
+        self.m2.rewind()
+
+    def delete_last(self): self.m1.rewind()
+
     def delete(self, i):
-        if   i ==  0: print("not yet implemented")
-        elif i == -1: self.melkman.rewind()
+        if   i ==  0: self.delete_first()
+        elif i == -1: self.delete_last()
+
         self.window.update()
 
 class Test(Mode):
@@ -111,10 +126,7 @@ class Controller:
         self.window.protocol('WM_DELETE_WINDOW', self.exit)
 
     # Expose mode and model attributes.
-    def __getattr__(self, key):
-        value = getattr(self.mode, key, None)
-        if value is None: value = getattr(self.mode.melkman, key, None)
-        return value
+    def __getattr__(self, key): return getattr(self.mode, key, None)
 
     def select(self, mode):
         self.mode.cancel = True
@@ -123,7 +135,6 @@ class Controller:
 
     def delete(self, p = None, i = None):
         assert (i is not None) or (p is not None)
-        if not self.mode.melkman.lst: return
         if i is None: i = p.index
         self.mode.delete(i)
 
