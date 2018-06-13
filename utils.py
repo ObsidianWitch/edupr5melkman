@@ -8,11 +8,13 @@ class Table(types.SimpleNamespace):
 class Iter:
     def __init__(self, collection):
         self.collection = collection
-        self.i = 0
+        self.i = -1
 
     @property
     def current(self):
-        if self.collection: return self.collection[self.i]
+        if self.collection:
+            if self.i == -1: return self.collection[0]
+            else:            return self.collection[self.i]
 
     @property
     def finished(self): return (self.i == len(self.collection) - 1)

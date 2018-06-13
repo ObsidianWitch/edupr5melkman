@@ -68,34 +68,45 @@ class Melkman:
         self.lst = lst
         self.iter = Iter(self.lst)
         self.hull = collections.deque()
+        self.rotation = 0
         self.history = History()
+
+    @property
+    def initialized(self): return (len(self.hull) >= 4) \
+                              and (self.rotation != 0)
 
     # Process all points from `self.lst`.
     # Complexity: O(n)
     def run(self):
         while not self.iter.finished: self.next()
 
+    def init(self):
+        p = self.iter.current
+        if self.hull:
+            self.history.new()
+            self.history.insert(
+                side  = -1,
+                point = self.hull.popleft(),
+            )
+        self.hull.appendleft(p)
+        self.hull.append(p)
+        if len(self.hull) < 4: return
+
+        self.rotation = V2.rotation(
+            self.hull[1], self.hull[-2], self.hull[-1]
+        )
+
     # Process the next point from `self.lst`.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
     # Complexity: O(1)
     def next(self):
-        def init(i = 0):
-            hull = (self.lst[i + 2], self.lst[0],
-                    self.lst[i + 1], self.lst[i + 2])
-            self.rotation = V2.rotation(*hull[1:])
-            if self.rotation == 0: init(i + 1)
-            else:
-                self.hull.extend(hull)
-                self.iter.i = i + 2
+        p = self.iter.next()
 
         # Initialize hull
-        if len(self.hull) == 0: return init()
-
+        if not self.initialized: return self.init()
         # Update hull
-        p = self.iter.next()
-        if p is None: return # finished
-        self.step(p)
+        elif p is not None: self.step(p)
 
     # Add a new point `p` to `self.lst` if `self.lst U {p}` satisfies the
     # simple polygonal chain property.
@@ -103,25 +114,15 @@ class Melkman:
     # this point to `self.hull` or not.
     # Complexity: O(n)
     def add(self, p):
-        def init(p):
-            self.lst.append(p)
-            if len(self.lst) < 3: return
-            hull = (self.lst[-1], self.lst[0], self.lst[-2], self.lst[-1])
-            self.rotation = V2.rotation(*hull[1:])
-            if self.rotation == 0: return # collinear
-            self.hull.extend(hull)
-
         p = V2(p, index = len(self.lst))
         if not SimplePolygonalChain.check_1(self.lst, p): return
+        self.lst.append(p)
+        self.iter.next()
 
         # Initialize hull
-        if len(self.hull) == 0: init(p)
+        if not self.initialized: return self.init()
         # Update hull
-        else:
-            self.lst.append(p)
-            self.step(p)
-
-        self.iter.next()
+        else: self.step(p)
 
     # Delete a point from `self.lst`. It can only be deleted if `self.lst \ {p}`
     # is a simple polygonal chain. If p is at one end of `self.lst`, we can
@@ -143,13 +144,11 @@ class Melkman:
         for j, p in enumerate(self.lst): p.index = j
 
         # recompute convex hull
-        self.iter = Iter(self.lst)
-        self.hull = collections.deque()
-        if len(self.lst) >= 3: self.run()
+        self.__init__(self.lst) # reset
+        self.run()
 
     def rewind(self):
         actions = self.history.rewind()
-        # if not actions: return self.iter.prev() if self.history else None
         if not actions: return self.iter.prev()
         self.hull.pop()
         self.hull.popleft()
