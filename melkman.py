@@ -148,11 +148,12 @@ class Melkman:
         self.run()
 
     def rewind(self):
-        actions = self.history.rewind()
-        if not actions: return self.iter.prev()
-        self.hull.pop()
-        self.hull.popleft()
+        actions = self.history.rewind() or ()
         self.iter.prev()
+        if actions or (len(self.hull) == 2):
+            self.hull.pop()
+            self.hull.popleft()
+
         for a in actions[::-1]:
             if   a.side == -1: self.hull.appendleft(a.point)
             elif a.side ==  1: self.hull.append(a.point)

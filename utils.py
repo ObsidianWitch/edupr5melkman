@@ -25,6 +25,6 @@ class Iter:
             return self.collection[self.i]
 
     def prev(self):
-        if self.i - 1 >= 0:
+        if self.i - 1 >= -1:
             self.i -= 1
             return self.collection[self.i]
