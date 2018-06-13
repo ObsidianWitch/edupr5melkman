@@ -21,7 +21,7 @@ class Window(tk.Tk):
         new_menu["menu"] = new_menu.menu
         for i, mode in enumerate(self.controller.MODES):
             add_mode = lambda mode: new_menu.menu.add_command(
-                label   = mode.NAME,
+                label   = mode.name(),
                 command = lambda: self.controller.select(mode),
             ) ; add_mode(mode)
 
@@ -75,7 +75,7 @@ class Information(tk.Frame):
 
     def update_state(self):
         txt = []
-        txt.append(f"Mode: {self.controller.NAME}")
+        txt.append(f"Mode: {self.controller.mode.name()}")
 
         txt.append(f"Points: {len(self.controller.mode)}")
 
@@ -182,9 +182,9 @@ class Canvas(tk.Canvas):
             )
 
     def draw(self, melkman):
-        self.draw_edges(melkman.lst, "gray15", dash = (5, 5))
-        self.draw_dots(melkman.lst)
-        self.draw_edges(melkman.hull, "red", width = 2)
+        self.draw_edges(melkman.spc, "gray15", dash = (5, 5))
+        self.draw_dots(melkman.spc)
+        self.draw_edges(melkman.hull, "firebrick2", width = 2)
         self.draw_nodes(melkman.hull)
 
     def update(self):

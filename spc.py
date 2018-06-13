@@ -7,15 +7,15 @@ class SimplePolygonalChain:
     # Complexity: O(n^2)
     @classmethod
     def generate(cls, area, n):
-        lst = []
+        spc = []
         for _ in range(n):
             p = V2(
                 random.randrange(area.x, area.width),
                 random.randrange(area.y, area.height),
-                index = len(lst),
+                index = len(spc),
             )
-            if cls.check_1(lst, p): lst.append(p)
-        return lst
+            if cls.check_1(spc, p): spc.append(p)
+        return spc
 
     # Given `spc`, a simple polygonal chain, check if the property is still
     # true for `spc U {p}`.

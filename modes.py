@@ -8,6 +8,9 @@ class Mode:
         self.window  = window
         self.melkman = None
 
+    @classmethod
+    def name(cls): return cls.__name__
+
     @property
     def latestp(self): return self.melkman.iter.current
 
@@ -20,11 +23,9 @@ class Mode:
 
     def __len__(self):
         if self.melkman is None: return 0
-        else: return len(self.melkman.lst)
+        else: return len(self.melkman.spc)
 
 class Interactive(Mode):
-    NAME = "interactive"
-
     def __init__(self, window):
         Mode.__init__(self, window)
         self.melkman = Melkman([])
@@ -41,7 +42,6 @@ class Interactive(Mode):
         self.window.update()
 
 class Step(Mode):
-    NAME = "step"
     NPOINTS = 100
 
     def __init__(self, window):
@@ -76,7 +76,6 @@ class Step(Mode):
         self.window.update()
 
 class Test(Mode):
-    NAME = "test"
     NPOINTS = 300
     CHECKS  = 5000
     SLICES  = 10

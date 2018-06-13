@@ -14,18 +14,20 @@ class History(collections.deque):
         right = [],
     ))
 
+    # Add a point popped from the left of a deque to the current entry.
     def insert_left(self, p): self[-1].left.append(p)
 
+    # Add a point popped from the right of a deque to the current entry.
     def insert_right(self, p): self[-1].right.append(p)
 
     def rewind(self): return self.pop() if self else None
 
 class Melkman:
-    # Initializes the algorithm with a simple polygonal chain `lst`. If `lst`
+    # Initializes the algorithm with a simple polygonal chain `spc`. If `spc`
     # is empty, points can be added later.
-    def __init__(self, lst):
-        self.lst = lst
-        self.iter = Iter(self.lst)
+    def __init__(self, spc):
+        self.spc = spc
+        self.iter = Iter(self.spc)
         self.hull = collections.deque()
         self.rotation = 0
         self.history = History()
@@ -46,12 +48,12 @@ class Melkman:
             self.hull[1], self.hull[-2], self.hull[-1]
         )
 
-    # Process all points from `self.lst`.
+    # Process all points from `self.spc`.
     # Complexity: O(n)
     def run(self):
         while not self.iter.finished: self.next()
 
-    # Process the next point from `self.lst`.
+    # Process the next point from `self.spc`.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
     # Complexity: O(1)
@@ -64,15 +66,15 @@ class Melkman:
         # Update hull
         elif p is not None: self.step(p)
 
-    # Add a new point `p` to `self.lst` if `self.lst U {p}` satisfies the
+    # Add a new point `p` to `self.spc` if `self.spc U {p}` satisfies the
     # simple polygonal chain property.
     # Then, execute one step of the Melkman algorithm to decide whether to add
     # this point to `self.hull` or not.
     # Complexity: O(n)
     def add(self, p):
-        p = V2(p, index = len(self.lst))
-        if not SPC.check_1(self.lst, p): return
-        self.lst.append(p)
+        p = V2(p, index = len(self.spc))
+        if not SPC.check_1(self.spc, p): return
+        self.spc.append(p)
         self.iter.next()
 
         # Initialize hull
@@ -80,28 +82,28 @@ class Melkman:
         # Update hull
         else: self.step(p)
 
-    # Delete a point from `self.lst`. It can only be deleted if `self.lst \ {p}`
-    # is a simple polygonal chain. If p is at one end of `self.lst`, we can
+    # Delete a point from `self.spc`. It can only be deleted if `self.spc \ {p}`
+    # is a simple polygonal chain. If p is at one end of `self.spc`, we can
     # remove it without reverifying the simple polygonal chain property. If `p`
     # is successfully removed, recompute the convex hull.
     def delete(self, i):
-        def at_end(): return (i == 0 or i == len(self.lst) - 1 or i == -1)
+        def at_end(): return (i == 0 or i == len(self.spc) - 1 or i == -1)
         def is_spc(): return SPC.check_n(
-            self.lst[0 : i], self.lst[i + 1 :]
+            self.spc[0 : i], self.spc[i + 1 :]
         )
 
-        if not self.lst: return
-        p = self.lst[i]
+        if not self.spc: return
+        p = self.spc[i]
 
         # check simple polygonal chain
         if (not at_end()) and (not is_spc()): return
-        del self.lst[i]
+        del self.spc[i]
 
         # update indices
-        for j, p in enumerate(self.lst): p.index = j
+        for j, p in enumerate(self.spc): p.index = j
 
         # recompute convex hull
-        self.__init__(self.lst) # reset
+        self.__init__(self.spc) # reset
         self.run()
 
     def rewind(self):
@@ -168,9 +170,9 @@ class Melkman:
         self.hull.appendleft(p)
         self.hull.append(p)
 
-    # Once the algorithm has processed the whole `self.lst`, this method can
+    # Once the algorithm has processed the whole `self.spc`, this method can
     # check the validity of the convex hull.
-    # For each edge [AB] in the hull, for every point P from `self.lst`,
+    # For each edge [AB] in the hull, for every point P from `self.spc`,
     # check that the rotation for (A, B, P) is equal to `self.rotation` or 0
     # (colinear). It means that each point must be inside or on the hull.
     def check(self):
@@ -178,7 +180,7 @@ class Melkman:
         for i in range(len(self.hull) - 1):
             a = self.hull[i]
             b = self.hull[i + 1]
-            for p in self.lst:
+            for p in self.spc:
                 r = V2.rotation(a, b, p)
                 if (r != self.rotation) and (r != 0): return False
         return True
