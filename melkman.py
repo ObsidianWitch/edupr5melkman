@@ -14,10 +14,12 @@ class History(collections.deque):
         right = [],
     ))
 
-    # Add a point popped from the left of a deque to the current entry.
+    # Add a point `p` to the current entry. `p` has been popped from the left
+    # of a deque.
     def insert_left(self, p): self[-1].left.append(p)
 
-    # Add a point popped from the right of a deque to the current entry.
+    # Add a point `p` to the current entry. `p` has been popped from the right
+    # of a deque.
     def insert_right(self, p): self[-1].right.append(p)
 
     def rewind(self): return self.pop() if self else None
@@ -130,7 +132,7 @@ class Melkman:
     # given 2 convex hulls of respective size l and m
     # complexity: o(l^2 + m^2)
     def bridge(self, other):
-        h1, h2 = self.hull, other
+        h1, h2 = self.hull, other.hull
         def is_tangent(a, b):
             side = 0
             for p in itertools.chain(h1, h2):
@@ -142,7 +144,6 @@ class Melkman:
         tangents = []
         for a, b in itertools.product(h1, h2):
             if is_tangent(a, b): tangents.append((a, b))
-            if len(tangents) >= 2: break
         return tangents
 
     # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it

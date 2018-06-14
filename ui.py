@@ -98,13 +98,10 @@ class Information(tk.Frame):
             hull_str = str(melkman) if melkman else "∅"
             return f"h{i}: {hull_str}"
 
-        m0 = self.controller.melkman
-        m1 = self.controller.m1
-        m2 = self.controller.m2
-
         self.hull_label["text"] = "\n".join((
-            helper(m1, 1), helper(m2, 2)
-        )) if m1 else helper(m0, 0)
+            helper(self.controller.m1, 1),
+            helper(self.controller.m2, 2)
+        )) if self.controller.m1 else helper(self.controller.melkman, 0)
 
     def update(self):
         self.update_hulls()
@@ -120,55 +117,30 @@ class Canvas(tk.Canvas):
         )
         self["background"] = "white"
 
-    def draw_circle(self, center, radius, fill, activefill, outline):
+    def draw_circle(self, center, radius, fill, outline):
+        latestp = self.controller.latestp
+        radius = radius if center != latestp else radius + 2
+        fill = fill[0] if center != latestp else fill[-1]
+        outline = outline[0] if center != latestp else outline[-1]
+
         return self.create_oval(
             center.x - radius, center.y - radius,
             center.x + radius, center.y + radius,
             fill          = fill,
-            activefill    = activefill,
+            activefill    = "light slate blue",
             outline       = outline,
-            activeoutline = activefill,
+            activeoutline = "light slate blue",
         )
 
-    # Bind events to multiple items.
-    # * Right click: remove the point associated with the items.
-    def bind_item(self, p, *ids):
-        for id in ids:
-            self.tag_bind(id, "<Button-3>",
-                lambda *args: self.controller.delete(p)
-            )
+    def draw_text(self, center, text):
+        return self.create_text(
+            center.x, center.y,
+            text       = text,
+            fill       = "gray15",
+            activefill = "light slate blue"
+        )
 
-    def draw_nodes(self, collection):
-        latestp = self.controller.latestp
-        for p in collection:
-            id1 = self.draw_circle(
-                center     = p,
-                radius     = 10 if p != latestp else 12,
-                fill       = "white",
-                activefill = "light slate blue",
-                outline    = "firebrick2" if p != latestp else "dark slate blue",
-            )
-            id2 = self.create_text(
-                p.x, p.y,
-                text       = str(p.index),
-                fill       = "gray15",
-                activefill = "light slate blue"
-            )
-            self.bind_item(p, id1, id2)
-
-    def draw_dots(self, collection):
-        latestp = self.controller.latestp
-        for p in collection:
-            id = self.draw_circle(
-                center     = p,
-                radius     = 3 if p != latestp else 5,
-                fill       = "gray15" if p != latestp else "dark slate blue",
-                activefill = "light slate blue",
-                outline    = "gray15" if p != latestp else "dark slate blue",
-            )
-            self.bind_item(p, id)
-
-    def draw_edges(self, collection, color, width = 1, dash = None):
+    def draw_edges(self, collection, color, width, dash):
         for i, _ in enumerate(collection):
             if i == len(collection) - 1: return
             p1 = collection[i]
@@ -181,18 +153,70 @@ class Canvas(tk.Canvas):
                 dash = dash,
             )
 
-    def draw(self, melkman):
-        self.draw_edges(melkman.spc, "gray15", dash = (5, 5))
-        self.draw_dots(melkman.spc)
-        self.draw_edges(melkman.hull, "firebrick2", width = 2)
-        self.draw_nodes(melkman.hull)
+    # Bind events to multiple items.
+    # * Right click: remove the point associated with the items.
+    def bind_items(self, p, *ids):
+        for id in ids:
+            self.tag_bind(id, "<Button-3>",
+                lambda *args: self.controller.delete(p)
+            )
+
+    def draw_nodes(self, collection):
+        for p in collection:
+            id1 = self.draw_circle(
+                center     = p,
+                radius     = 10,
+                fill       = ("white",),
+                outline    = ("firebrick2", "dark slate blue"),
+            )
+            id2 = self.draw_text(p, str(p.index))
+            self.bind_items(p, id1, id2)
+
+    def draw_dots(self, collection):
+        for p in collection:
+            id = self.draw_circle(
+                center     = p,
+                radius     = 3,
+                fill       = ("gray15", "dark slate blue"),
+                outline    = ("gray15", "dark slate blue"),
+            )
+            self.bind_items(p, id)
+
+    def draw_spc_edges(self, collection):
+        self.draw_edges(collection,
+            color = "gray15",
+            width = 1,
+            dash  = (5, 5),
+        )
+
+    def draw_hull_edges(self, collection):
+        self.draw_edges(collection,
+            color = "firebrick2",
+            width = 2,
+            dash  = None,
+        )
+
+    def draw_bridges(self, m1, m2):
+        tangents = m1.bridge(m2)
+        for t in tangents: self.draw_edges(t,
+            color = "green",
+            width = 2,
+            dash = None,
+        )
+
+    def draw(self, *instances):
+        for i, melkman in enumerate(instances):
+            if melkman is None: return
+            if i == 0: self.draw_spc_edges(melkman.spc)
+            if i == 0: self.draw_dots(melkman.spc)
+            if i == 1: self.draw_bridges(instances[1], instances[2])
+            self.draw_hull_edges(melkman.hull)
+            self.draw_nodes(melkman.hull)
 
     def update(self):
         self.delete("all")
-
-        for melkman in (
+        self.draw(
             self.controller.melkman,
             self.controller.m1,
-            self.controller.m2,
-        ):
-            if melkman is not None: self.draw(melkman)
+            self.controller.m2
+        )
