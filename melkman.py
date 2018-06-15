@@ -38,17 +38,20 @@ class Melkman:
     def initialized(self): return (len(self.hull) >= 4) \
                               and (self.rotation != 0)
 
-    def init(self):
-        p = self.iter.current
-        self.history.new(index = self.iter.i)
-        if self.hull: self.history.insert_left(self.hull.popleft())
-        self.hull.appendleft(p)
-        self.hull.append(p)
-        if len(self.hull) < 4: return
+    # TODO fix
+    def init(self, p):
+        def popl(): self.history.insert_left(self.hull.popleft())
+        def popr(): self.history.insert_right(self.hull.pop())
 
         self.rotation = V2.rotation(
-            self.hull[1], self.hull[-2], self.hull[-1]
-        )
+            self.hull[1], self.hull[-1], p
+        ) if len(self.hull) >= 2 else 0
+
+        self.history.new(index = self.iter.i)
+        if (len(self.hull) >= 3) and (self.rotation == 0): popr()
+        if self.hull: popl()
+        self.hull.appendleft(p)
+        self.hull.append(p)
 
     # Process all points from `self.spc`.
     # Complexity: O(n)
@@ -63,10 +66,8 @@ class Melkman:
         if self.iter.finished: return
         p = self.iter.next()
 
-        # Initialize hull
-        if not self.initialized: return self.init()
-        # Update hull
-        elif p is not None: self.step(p)
+        if not self.initialized: return self.init(p)
+        else: self.step(p)
 
     # Add a new point `p` to `self.spc` if `self.spc U {p}` satisfies the
     # simple polygonal chain property.
@@ -79,9 +80,7 @@ class Melkman:
         self.spc.append(p)
         self.iter.next()
 
-        # Initialize hull
-        if not self.initialized: return self.init()
-        # Update hull
+        if not self.initialized: return self.init(p)
         else: self.step(p)
 
     # Delete a point from `self.spc`. It can only be deleted if `self.spc \ {p}`
