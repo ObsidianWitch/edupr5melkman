@@ -25,7 +25,7 @@ class History(collections.deque):
     def rewind(self): return self.pop() if self else None
 
 class Melkman:
-    # Initializes the algorithm with a simple polygonal chain `spc`. If `spc`
+    # Initialize the algorithm with a simple polygonal chain `spc`. If `spc`
     # is empty, points can be added later.
     def __init__(self, spc):
         self.spc = spc
@@ -38,7 +38,8 @@ class Melkman:
     def initialized(self): return (len(self.hull) >= 4) \
                               and (self.rotation != 0)
 
-    # TODO fix
+    # Intialize `self.hull` by adding points one by one (`p`) until it contains
+    # 3 non-colinear points.
     def init(self, p):
         def popl(): self.history.insert_left(self.hull.popleft())
         def popr(): self.history.insert_right(self.hull.pop())
@@ -50,6 +51,31 @@ class Melkman:
         self.history.new(index = self.iter.i)
         if (len(self.hull) >= 3) and (self.rotation == 0): popr()
         if self.hull: popl()
+        self.hull.appendleft(p)
+        self.hull.append(p)
+
+    # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
+    # contributes to the convex hull. The `self.rotation` property must be
+    # satisfied at each step of the algorithm.
+    # Deleted points are saved in `self.history`.
+    # Complexity: O(1)
+    def step(self, p):
+        def rotstart(): return V2.rotation(
+            self.hull[0], self.hull[1], p
+        ) == self.rotation
+        def rotend(): return V2.rotation(
+            self.hull[-2], self.hull[-1], p
+        ) == self.rotation
+
+        if rotstart() and rotend(): return
+        self.history.new(index = self.iter.i)
+        while not rotstart(): self.history.insert_left(
+            self.hull.popleft()
+        )
+        while not rotend(): self.history.insert_right(
+            self.hull.pop(),
+        )
+
         self.hull.appendleft(p)
         self.hull.append(p)
 
@@ -117,7 +143,10 @@ class Melkman:
         for p in actions.left[::-1]:  self.hull.appendleft(p)
         for p in actions.right[::-1]: self.hull.append(p)
 
-    # TODO doc
+    # Split the current hull into 2 new hulls.
+    # * m1.hull is empty and awaits for new points to be processed.
+    # * m2.hull is equivalent to the current hull with `spc`'s points added in
+    # descending order.
     def split(self):
         cls = self.__class__
         m1 = cls(self.iter.remaining())
@@ -125,11 +154,8 @@ class Melkman:
         m2.run()
         return m1, m2
 
-    # TODO use
-    # TODO doc
-    # brute force method
-    # given 2 convex hulls of respective size l and m
-    # complexity: o(l^2 + m^2)
+    # Return the two tangents necessary to merge the current convex hull and
+    # `other.hull`.
     def bridge(self, other):
         h1, h2 = self.hull, other.hull
         def is_tangent(a, b):
@@ -144,31 +170,6 @@ class Melkman:
         for a, b in itertools.product(h1, h2):
             if is_tangent(a, b): tangents.append((a, b))
         return tangents
-
-    # Execute one step of the Melkman algorithm. Add `p` to `self.hull` if it
-    # contributes to the convex hull. The `self.rotation` property must be
-    # satisfied at each step of the algorithm.
-    # Deleted points are saved in `self.history`.
-    # Complexity: O(1)
-    def step(self, p):
-        def rotstart(): return V2.rotation(
-            self.hull[0], self.hull[1], p
-        ) == self.rotation
-        def rotend(): return V2.rotation(
-            self.hull[-2], self.hull[-1], p
-        ) == self.rotation
-
-        if rotstart() and rotend(): return
-        self.history.new(index = self.iter.i)
-        while not rotstart(): self.history.insert_left(
-            self.hull.popleft()
-        )
-        while not rotend(): self.history.insert_right(
-            self.hull.pop(),
-        )
-
-        self.hull.appendleft(p)
-        self.hull.append(p)
 
     # Once the algorithm has processed the whole `self.spc`, this method can
     # check the validity of the convex hull.
