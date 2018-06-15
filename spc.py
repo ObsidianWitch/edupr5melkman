@@ -30,14 +30,3 @@ class SimplePolygonalChain:
                 c = spc[-1], d = p,
             ): return False
         return True
-
-    # Given one spc splitted into two spc (`spc1` and `spc2`) by removing one
-    # point, Check if the property is still true for `spc1 U spc2`.
-    # The test is equivalent to the following:
-    # with `a = spc1[-1]` and `b = spc2[0]`, check the [ab] line segment
-    # against all line segments from `spc1` and `spc2`.
-    # Complexity: O(n)
-    @classmethod
-    def check_n(cls, spc1, spc2):
-        return cls.check_1(spc1, spc2[0]) \
-           and cls.check_1(spc2[::-1], spc1[-1])

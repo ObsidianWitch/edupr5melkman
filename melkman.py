@@ -109,30 +109,6 @@ class Melkman:
         if not self.initialized: return self.init(p)
         else: self.step(p)
 
-    # Delete a point from `self.spc`. It can only be deleted if `self.spc \ {p}`
-    # is a simple polygonal chain. If p is at one end of `self.spc`, we can
-    # remove it without reverifying the simple polygonal chain property. If `p`
-    # is successfully removed, recompute the convex hull.
-    def delete(self, i):
-        def at_end(): return (i == 0 or i == len(self.spc) - 1 or i == -1)
-        def is_spc(): return SPC.check_n(
-            self.spc[0 : i], self.spc[i + 1 :]
-        )
-
-        if not self.spc: return
-        p = self.spc[i]
-
-        # check simple polygonal chain
-        if (not at_end()) and (not is_spc()): return
-        del self.spc[i]
-
-        # update indices
-        for j, p in enumerate(self.spc): p.index = j
-
-        # recompute convex hull
-        self.__init__(self.spc) # reset
-        self.run()
-
     def rewind(self):
         actions = self.history.rewind()
         if not actions: return

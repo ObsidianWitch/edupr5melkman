@@ -12,8 +12,8 @@ python main.py
 
 ## Modes
 
-* **Interactive**: the user adds/removes points to form a simple polygonal chain.
-Each point is processed by the Melkman algorithm to determine if it contributes
+* **Interactive**: the user adds points to form a simple polygonal chain. Each
+point is processed by the Melkman algorithm to determine if it contributes
 to the convex hull.
 * **Step**: a simple polygonal chain is generated. Points can be processed one
 at a time by the Melkman algorithm. Points can also be removed from the hull.

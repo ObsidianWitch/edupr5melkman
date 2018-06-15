@@ -37,9 +37,7 @@ class Interactive(Mode):
         self.melkman.add(p)
         self.window.update()
 
-    def delete(self, i):
-        self.melkman.delete(i)
-        self.window.update()
+    def delete(self, i): pass
 
 class Step(Mode):
     NPOINTS = 100

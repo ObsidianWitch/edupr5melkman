@@ -32,7 +32,7 @@ class Window(tk.Tk):
             row = 0, column = 4, sticky = tk.W
         )
         self.del_frame.hide = self.del_frame.grid_forget
-        self.del_frame.show()
+        self.del_frame.hide()
 
         ttk.Separator(self.del_frame, orient = tk.VERTICAL).grid(
             row = 0, column = 0,
@@ -62,10 +62,10 @@ class Window(tk.Tk):
     def select(self, mode):
         self.controller.select(mode)
 
-        if mode == self.controller.MODES.test:
-            self.del_frame.hide()
-        else:
+        if mode == self.controller.MODES.step:
             self.del_frame.show()
+        else:
+            self.del_frame.hide()
 
     def update(self):
         self.information.update()
@@ -144,9 +144,7 @@ class Canvas(tk.Canvas):
             center.x - radius, center.y - radius,
             center.x + radius, center.y + radius,
             fill          = fill,
-            activefill    = "light slate blue",
             outline       = outline,
-            activeoutline = "light slate blue",
         )
 
     def draw_text(self, center, text):
@@ -154,7 +152,6 @@ class Canvas(tk.Canvas):
             center.x, center.y,
             text       = text,
             fill       = "gray15",
-            activefill = "light slate blue"
         )
 
     def draw_edges(self, collection, color, width, dash):
@@ -170,34 +167,24 @@ class Canvas(tk.Canvas):
                 dash = dash,
             )
 
-    # Bind events to multiple items.
-    # * Right click: remove the point associated with the items.
-    def bind_items(self, p, *ids):
-        for id in ids:
-            self.tag_bind(id, "<Button-3>",
-                lambda *args: self.controller.delete(p)
-            )
-
     def draw_nodes(self, collection):
         for p in collection:
-            id1 = self.draw_circle(
+            self.draw_circle(
                 center     = p,
                 radius     = 10,
                 fill       = ("white",),
                 outline    = ("firebrick2", "dark slate blue"),
             )
-            id2 = self.draw_text(p, str(p.index))
-            self.bind_items(p, id1, id2)
+            self.draw_text(p, str(p.index))
 
     def draw_dots(self, collection):
         for p in collection:
-            id = self.draw_circle(
+            self.draw_circle(
                 center     = p,
                 radius     = 3,
                 fill       = ("gray15", "dark slate blue"),
                 outline    = ("gray15", "dark slate blue"),
             )
-            self.bind_items(p, id)
 
     def draw_spc_edges(self, collection):
         self.draw_edges(collection,
