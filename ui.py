@@ -22,21 +22,24 @@ class Window(tk.Tk):
         for i, mode in enumerate(self.controller.MODES):
             add_mode = lambda mode: new_menu.menu.add_command(
                 label   = mode.name(),
-                command = lambda: self.controller.select(mode),
+                command = lambda: self.select(mode),
             ) ; add_mode(mode)
 
-        del_menu = tk.Menubutton(top_frame,
+        self.del_menu = tk.Menubutton(top_frame,
             text   = "Del",
             relief = tk.RAISED
         )
-        del_menu.grid(row = 0, column = 1, sticky = tk.N + tk.S + tk.E + tk.W)
-        del_menu.menu = tk.Menu(del_menu)
-        del_menu["menu"] = del_menu.menu
-        del_menu.menu.add_command(
+        self.del_menu.show = lambda: self.del_menu.grid(
+            row = 0, column = 1, sticky = tk.N + tk.S + tk.E + tk.W
+        )
+        self.del_menu.show()
+        self.del_menu.menu = tk.Menu(self.del_menu)
+        self.del_menu["menu"] = self.del_menu.menu
+        self.del_menu.menu.add_command(
             label   = "first",
             command = lambda: self.controller.delete(i = 0),
         )
-        del_menu.menu.add_command(
+        self.del_menu.menu.add_command(
             label   = "last",
             command = lambda: self.controller.delete(i = -1),
         )
@@ -49,6 +52,14 @@ class Window(tk.Tk):
         self.canvas.bind("<Button-1>",
             lambda event: self.controller.next((event.x, event.y))
         )
+
+    def select(self, mode):
+        self.controller.select(mode)
+
+        if mode == self.controller.MODES.test:
+            self.del_menu.grid_forget()
+        else:
+            self.del_menu.show()
 
     def update(self):
         self.information.update()
