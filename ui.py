@@ -208,6 +208,8 @@ class Canvas(tk.Canvas):
         )
 
     def draw_bridges(self, m1, m2):
+        if (m1 is None) or (m2 is None): return
+
         tangents = m1.bridge(m2)
         for t in tangents: self.draw_edges(t,
             color = "green",
@@ -215,19 +217,18 @@ class Canvas(tk.Canvas):
             dash = None,
         )
 
-    def draw(self, *instances):
-        for i, melkman in enumerate(instances):
-            if melkman is None: return
-            if i == 0: self.draw_spc_edges(melkman.spc)
-            if i == 0: self.draw_dots(melkman.spc)
-            if i == 1: self.draw_bridges(instances[1], instances[2])
+    def draw(self, melkman, spc = True, hull = True):
+        if melkman is None: return
+        if spc:
+            self.draw_spc_edges(melkman.spc)
+            self.draw_dots(melkman.spc)
+        if hull:
             self.draw_hull_edges(melkman.hull)
             self.draw_nodes(melkman.hull)
 
     def update(self):
         self.delete("all")
-        self.draw(
-            self.controller.melkman,
-            self.controller.m1,
-            self.controller.m2
-        )
+        self.draw(self.controller.melkman)
+        self.draw(self.controller.m1, spc = False)
+        self.draw(self.controller.m2, spc = False)
+        self.draw_bridges(self.controller.m1, self.controller.m2)

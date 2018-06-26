@@ -5,6 +5,7 @@ class Table(types.SimpleNamespace):
     def __iter__(self):
         for k, v in self.__dict__.items(): yield v
 
+# Iterable keeping track of the current element.
 class Iter:
     def __init__(self, collection):
         self.collection = collection
