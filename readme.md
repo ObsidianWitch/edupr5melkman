@@ -1,5 +1,7 @@
 # Melkman
 
+Melkman's algorithm finds the convex hull of a simple polygonal chain in linear time. A convex hull is the smallest convex polygon of a set of points. A Simple polygonal chain is composed of connected line segments which do not self-intersect except at their connections.
+
 ## Dependencies
 
 * [Tcl/Tk](http://tcl.sourceforge.net/)
