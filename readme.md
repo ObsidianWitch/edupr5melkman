@@ -11,7 +11,7 @@ Melkman's algorithm finds the convex hull of a simple polygonal chain in linear 
 ## Run
 
 ~~~sh
-python main.py
+python src/main.py
 ~~~
 
 ## Modes
@@ -22,4 +22,4 @@ to the convex hull.
 * **Step**: a simple polygonal chain is generated. Points can be processed one
 at a time by the Melkman algorithm. Points can also be removed from the hull.
 * **Test**: test the algorithm's robustness by applying it to 5000 generated
-simple polygonal chain.
+simple polygonal chains.
