@@ -82,21 +82,11 @@ class Information(tk.Frame):
 
         tk.Frame.__init__(self, parent)
 
-        self.state_label = tk.Label(self,
-            text = ""
-        )
-        self.state_label.grid(row = 0, column = 0, sticky = tk.W)
+        self.label = tk.Label(self, text = "", wraplength = 760)
+        self.label.grid(row = 0, column = 0, sticky = tk.W)
 
-        self.hull_label = tk.Label(self,
-            text = "",
-            wraplength = 760,
-            justify = tk.LEFT,
-        )
-        self.hull_label.grid(row = 1, column = 0, sticky = tk.W)
-
-    def update_state(self):
+    def update(self):
         txt = []
-        txt.append(f"n: {len(self.controller.mode)}")
 
         if self.controller.checks is not None: txt.append(
             f"checks: ✓ {self.controller.passed}"
@@ -104,23 +94,18 @@ class Information(tk.Frame):
             f" / N {self.controller.CHECKS}"
         )
 
-        if self.controller.finished: txt.append("finished")
+        txt.append(f"n: {len(self.controller.mode)}")
 
-        self.state_label["text"] = " | ".join(txt)
-
-    def update_hulls(self):
         def helper(melkman, i):
             hull_str = str(melkman) if melkman else "∅"
             return f"h{i}: {hull_str}"
+        if self.controller.m1:
+            txt.append(helper(self.controller.m1, 1))
+            txt.append(helper(self.controller.m2, 2))
+        else:
+            txt.append(helper(self.controller.melkman, 0))
 
-        self.hull_label["text"] = "\n".join((
-            helper(self.controller.m1, 1),
-            helper(self.controller.m2, 2)
-        )) if self.controller.m1 else helper(self.controller.melkman, 0)
-
-    def update(self):
-        self.update_hulls()
-        self.update_state()
+        self.label["text"] = " | ".join(txt)
 
 class Canvas(tk.Canvas):
     def __init__(self, parent, controller):
