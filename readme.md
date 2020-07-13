@@ -1,4 +1,4 @@
-# Melkman
+# Melkman's Convex Hull Algorithm
 
 ![screenshot](https://i.imgur.com/Rdk8xlJ.png)
 
