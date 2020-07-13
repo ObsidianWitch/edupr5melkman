@@ -16,11 +16,15 @@ class Window(tk.Tk):
         button_frame = tk.Frame(top_frame)
         button_frame.grid(row = 0, column = 0, sticky = tk.W)
 
-        # New buttons
+        # Mode buttons
+        self.imode = tk.IntVar(0)
         for i, mode in enumerate(self.controller.MODES):
-            mode_button = lambda mode: tk.Button(button_frame,
-                text    = mode.name(),
-                relief  = tk.RAISED,
+            mode_button = lambda mode: tk.Radiobutton(button_frame,
+                text = mode.name(),
+                padx = 5, pady = 5,
+                indicatoron = 0,
+                variable = self.imode,
+                value = i,
                 command = lambda: self.select(mode),
             ).grid(row = 0, column = i, sticky = tk.W)
             mode_button(mode)
@@ -92,12 +96,10 @@ class Information(tk.Frame):
 
     def update_state(self):
         txt = []
-        txt.append(f"Mode: {self.controller.mode.name()}")
-
-        txt.append(f"Points: {len(self.controller.mode)}")
+        txt.append(f"n: {len(self.controller.mode)}")
 
         if self.controller.checks is not None: txt.append(
-            f"Checks: ✓ {self.controller.passed}"
+            f"checks: ✓ {self.controller.passed}"
             f" / X {self.controller.failed}"
             f" / N {self.controller.CHECKS}"
         )
@@ -105,10 +107,6 @@ class Information(tk.Frame):
         if self.controller.finished: txt.append("finished")
 
         self.state_label["text"] = " | ".join(txt)
-
-    def hull_str(self, melkman):
-        if not hull: return "∅"
-        else: return melkman
 
     def update_hulls(self):
         def helper(melkman, i):

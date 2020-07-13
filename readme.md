@@ -6,7 +6,7 @@ Melkman's algorithm finds the convex hull of a simple polygonal chain in linear 
 
 * [Tcl/Tk](http://tcl.sourceforge.net/)
 
-## Run (CLI)
+## Run
 
 ~~~sh
 python main.py
